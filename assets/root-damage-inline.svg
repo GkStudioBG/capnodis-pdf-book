@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 460" fill="none">
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9a66b"/>
+      <stop offset="100%" stop-color="#8b6442"/>
+    </linearGradient>
+    <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7a5c3a"/>
+      <stop offset="50%" stop-color="#9b7a52"/>
+      <stop offset="100%" stop-color="#6b4a2d"/>
+    </linearGradient>
+    <linearGradient id="healthy-root" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9b7a52"/>
+      <stop offset="100%" stop-color="#6b5a3a"/>
+    </linearGradient>
+    <linearGradient id="damaged-root" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a66d42"/>
+      <stop offset="100%" stop-color="#8d3d2f"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sky / above ground -->
+  <rect x="0" y="0" width="480" height="200" fill="#e8d5a3" opacity="0.3"/>
+
+  <!-- Ground line -->
+  <rect x="0" y="200" width="480" height="260" fill="url(#ground)"/>
+
+  <!-- Underground fill -->
+  <rect x="0" y="200" width="480" height="260" fill="#8b6442" opacity="0.4"/>
+
+  <!-- Trunk (above ground) -->
+  <rect x="215" y="80" width="50" height="130" fill="url(#trunk)" rx="4"/>
+  <rect x="208" y="80" width="64" height="12" fill="#6b4a2d" rx="3"/>
+
+  <!-- Branches -->
+  <path d="M240 90 Q200 50 160 60" stroke="#7a5c3a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M240 90 Q280 40 330 50" stroke="#7a5c3a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M240 110 Q190 85 155 92" stroke="#7a5c3a" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M240 110 Q295 80 345 88" stroke="#7a5c3a" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <!-- Leaves (some yellowing/dry for drought look) -->
+  <ellipse cx="158" cy="52" rx="28" ry="16" fill="#b5a030" transform="rotate(-30 158 52)"/>
+  <ellipse cx="320" cy="42" rx="32" ry="18" fill="#c9a030" transform="rotate(20 320 42)"/>
+  <ellipse cx="152" cy="85" rx="22" ry="12" fill="#9b8a20" transform="rotate(-15 152 85)"/>
+  <ellipse cx="345" cy="80" rx="26" ry="14" fill="#a89030" transform="rotate(25 345 80)"/>
+  <ellipse cx="200" cy="40" rx="20" ry="12" fill="#8b7a20" transform="rotate(-40 200 40)"/>
+  <ellipse cx="280" cy="35" rx="24" ry="13" fill="#b09828" transform="rotate(15 280 35)"/>
+  <ellipse cx="240" cy="25" rx="18" ry="10" fill="#c4a830" transform="rotate(5 240 25)"/>
+
+  <!-- Wilted/dry leaf clusters -->
+  <ellipse cx="175" cy="65" rx="18" ry="10" fill="#8a7020" opacity="0.7" transform="rotate(-20 175 65)"/>
+  <ellipse cx="305" cy="55" rx="20" ry="11" fill="#907520" opacity="0.7" transform="rotate(30 305 55)"/>
+
+  <!-- COLLAR / TRUNK BASE (highlighted) -->
+  <ellipse cx="240" cy="205" rx="40" ry="16" fill="#a66d42" opacity="0.6" filter="url(#glow)"/>
+  <rect x="205" y="190" width="70" height="25" fill="#a66d42" rx="6" opacity="0.5"/>
+
+  <!-- DAMAGED ROOTS (orange-red, broken) -->
+  <path d="M240 215 Q280 250 320 280" stroke="#a66d42" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M240 215 Q290 260 270 300" stroke="#a66d42" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M240 215 Q200 260 160 290" stroke="#a66d42" stroke-width="9" fill="none" stroke-linecap="round" opacity="0.85"/>
+  <path d="M240 215 Q210 250 180 270" stroke="#a66d42" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Damage marks on roots -->
+  <circle cx="300" cy="255" r="12" fill="none" stroke="#8d3d2f" stroke-width="3" stroke-dasharray="4 3"/>
+  <circle cx="255" cy="280" r="10" fill="none" stroke="#8d3d2f" stroke-width="3" stroke-dasharray="4 3"/>
+  <circle cx="195" cy="275" r="11" fill="none" stroke="#8d3d2f" stroke-width="3" stroke-dasharray="4 3"/>
+
+  <!-- HEALTHY ROOTS (brown solid) -->
+  <path d="M240 215 Q310 240 380 290" stroke="#9b7a52" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <path d="M240 215 Q180 230 100 270" stroke="#9b7a52" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <path d="M240 215 Q330 260 400 330" stroke="#9b7a52" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- EGG CLUSTERS near trunk base (small dots) -->
+  <circle cx="230" cy="208" r="4" fill="#c98b37" opacity="0.9"/>
+  <circle cx="250" cy="210" r="4" fill="#c98b37" opacity="0.9"/>
+  <circle cx="238" cy="215" r="4" fill="#c98b37" opacity="0.9"/>
+
+  <!-- LABELS -->
+  <!-- Trunk label -->
+  <line x1="270" y1="140" x2="360" y2="110" stroke="#f5d38d" stroke-width="1.5" opacity="0.8"/>
+  <rect x="355" y="102" width="110" height="22" rx="6" fill="#263f2b" opacity="0.85"/>
+  <text x="360" y="118" fill="#f5d38d" font-family="Inter,sans-serif" font-size="11" font-weight="800">Cuello del árbol</text>
+
+  <!-- Collar damage label -->
+  <line x1="275" y1="205" x2="390" y2="175" stroke="#f5d38d" stroke-width="1.5" opacity="0.8"/>
+  <rect x="390" y="167" width="80" height="22" rx="6" fill="#8d3d2f" opacity="0.9"/>
+  <text x="395" y="183" fill="white" font-family="Inter,sans-serif" font-size="11" font-weight="800">Daño activo</text>
+
+  <!-- Root damage label -->
+  <line x1="310" y1="265" x2="420" y2="300" stroke="#f5d38d" stroke-width="1.5" opacity="0.8"/>
+  <rect x="420" y="292" width="50" height="20" rx="6" fill="#a66d42" opacity="0.9"/>
+  <text x="425" y="306" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="800">Raíces</text>
+
+  <!-- Egg laying zone label -->
+  <rect x="140" y="198" width="55" height="20" rx="6" fill="#c98b37" opacity="0.9"/>
+  <text x="145" y="212" fill="white" font-family="Inter,sans-serif" font-size="9" font-weight="900">Zona puesta</text>
+
+  <!-- Ground line label -->
+  <line x1="60" y1="200" x2="60" y2="240" stroke="#f5d38d" stroke-width="1.5" opacity="0.8"/>
+  <rect x="15" y="205" width="42" height="18" rx="6" fill="#263f2b" opacity="0.85"/>
+  <text x="18" y="218" fill="#f5d38d" font-family="Inter,sans-serif" font-size="9" font-weight="700">Suelo</text>
+
+  <!-- Caption at bottom -->
+  <text x="240" y="445" text-anchor="middle" fill="#263f2b" font-family="Inter,sans-serif" font-size="12" font-weight="700" opacity="0.8">Corte transversal — daño bajo tierra en almendro</text>
+</svg>

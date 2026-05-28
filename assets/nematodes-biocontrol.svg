@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" fill="none">
+  <rect width="320" height="240" fill="#fbf7ed"/>
+  <rect x="20" y="20" width="280" height="180" rx="16" fill="#fffaf1" stroke="#263f2b" stroke-width="2"/>
+  <text x="160" y="50" text-anchor="middle" fill="#263f2b" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="900">Nematodos entomopatógenos</text>
+  <!-- Nematode worm 1 -->
+  <path d="M60 90 Q80 70 100 85 Q120 100 140 82 Q160 64 180 80 Q200 96 220 78" stroke="#6f8d4d" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <circle cx="60" cy="90" r="5" fill="#6f8d4d"/>
+  <!-- Nematode worm 2 -->
+  <path d="M70 130 Q90 115 110 128 Q130 141 150 124 Q170 107 190 122 Q210 137 230 120" stroke="#8ea15b" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <circle cx="70" cy="130" r="5" fill="#8ea15b"/>
+  <!-- Nematode worm 3 -->
+  <path d="M55 165 Q75 152 95 163 Q115 174 135 158 Q155 142 175 156 Q195 170 215 154" stroke="#6f8d4d" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="55" cy="165" r="5" fill="#6f8d4d" opacity="0.7"/>
+  <!-- Larva being infected -->
+  <ellipse cx="250" cy="120" rx="35" ry="18" fill="#a66d42" opacity="0.8" transform="rotate(-15 250 120)"/>
+  <circle cx="238" cy="112" r="6" fill="#8d3d2f"/>
+  <circle cx="255" cy="115" r="6" fill="#8d3d2f"/>
+  <circle cx="244" cy="125" r="6" fill="#8d3d2f"/>
+  <!-- Infection marks -->
+  <circle cx="252" cy="108" r="4" fill="#c98b37" opacity="0.9"/>
+  <circle cx="242" cy="128" r="4" fill="#c98b37" opacity="0.9"/>
+  <!-- Labels -->
+  <text x="60" y="215" text-anchor="middle" fill="#6f8d4d" font-family="Inter,Arial,sans-serif" font-size="11" font-weight="800" opacity="0.85">Steinernema carpocapsae</text>
+  <text x="250" y="155" text-anchor="middle" fill="#a66d42" font-family="Inter,Arial,sans-serif" font-size="10" font-weight="800">Larva infectada</text>
+</svg>
