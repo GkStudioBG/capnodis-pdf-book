@@ -1,0 +1,14 @@
+# Keep assets but note they are large
+# assets/*.webp
+# assets/*.svg
+# assets/*.jpg
+
+# Local config
+.env
+.env.local
+config.php
+
+# Files to exclude from backup
+*.log
+.DS_Store
+Thumbs.db
