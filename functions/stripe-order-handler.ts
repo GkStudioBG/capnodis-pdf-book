@@ -14,7 +14,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   let event: any
   try {
-    event = await verifyAndParse(body, signature, Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET')!)
+    event = await verifyAndParse(body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET')!)
   } catch (err) {
     console.error('Webhook signature failed:', err)
     return new Response('Invalid signature', { status: 400 })
@@ -22,7 +22,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
-    if (session.payment_status === 'paid') {
+    if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
       try {
         await processOrder(session)
       } catch (err) {
@@ -153,8 +153,10 @@ async function verifyAndParse(payload: string, signature: string, secret: string
   const v1 = parts.find(p => p.startsWith('v1='))?.slice(3)
   if (!ts || !v1) throw new Error('Malformed signature')
 
+  // Strip 'whsec_' prefix — Stripe signs with the raw bytes after the prefix
+  const secretKey = secret.startsWith('whsec_') ? secret.slice(7) : secret
   const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(secret),
+    'raw', new TextEncoder().encode(secretKey),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   )
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${ts}.${payload}`))
