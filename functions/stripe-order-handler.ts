@@ -110,7 +110,7 @@ function emailHtml(firstName: string, url: string): string {
 <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 4px 24px rgba(30,44,24,.10);">
   <tr>
     <td style="background:#1d3522;padding:32px 40px;text-align:center;">
-      <span style="display:inline-block;background:#cfb035;color:#1d3522;font-weight:900;font-size:13px;letter-spacing:.08em;padding:7px 16px;border-radius:8px;">CAPNODIS</span>
+      <img src="https://capnodis.com/assets/logo-white.png" alt="Capnodis" style="height:52px;width:auto;display:block;margin:0 auto;">
       <p style="color:#b8c9b0;margin:10px 0 0;font-size:14px;">Guía Práctica contra el Gusano Cabezudo</p>
     </td>
   </tr>

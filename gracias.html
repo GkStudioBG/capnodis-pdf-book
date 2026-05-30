@@ -8,7 +8,7 @@
   *{box-sizing:border-box}
   body{margin:0;padding:0;background:#fbf7ed;font-family:Arial,sans-serif;color:#172116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
   .card{background:#fff;border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:0 4px 32px rgba(30,44,24,.12);text-align:center}
-  .brand{display:inline-block;background:#1d3522;color:#cfb035;font-weight:900;font-size:12px;letter-spacing:.08em;padding:6px 14px;border-radius:8px;margin-bottom:24px}
+  .logo{height:56px;width:auto;margin-bottom:24px;display:block;margin-left:auto;margin-right:auto}
   h1{margin:0 0 10px;font-size:22px;font-weight:800}
   .sub{margin:0 0 28px;font-size:15px;color:#636b5e;line-height:1.5}
   .files{text-align:left}
@@ -28,7 +28,7 @@
 </head>
 <body>
 <div class="card" id="card">
-  <div class="brand">CAPNODIS</div>
+  <picture><source srcset="assets/loogo.webp" type="image/webp"><img src="assets/loogo.png" alt="Capnodis" class="logo"></picture>
   <div class="spinner" id="spinner"></div>
   <p style="color:#636b5e;font-size:15px" id="loading-text">Verificando tu compra…</p>
 </div>
@@ -84,7 +84,7 @@ function showDownloads(token) {
     </a>`).join('')
 
   card.innerHTML = `
-    <div class="brand">CAPNODIS</div>
+    <picture><source srcset="assets/loogo.webp" type="image/webp"><img src="assets/loogo.png" alt="Capnodis" class="logo"></picture>
     <div class="icon-big">🎉</div>
     <h1>¡Gracias por tu compra!</h1>
     <p class="sub">Descarga tus materiales ahora. También te hemos enviado este enlace por correo.</p>
@@ -96,7 +96,7 @@ function showDownloads(token) {
 function showEmailFallback() {
   const card = document.getElementById('card')
   card.innerHTML = `
-    <div class="brand">CAPNODIS</div>
+    <picture><source srcset="assets/loogo.webp" type="image/webp"><img src="assets/loogo.png" alt="Capnodis" class="logo"></picture>
     <div class="icon-big">📩</div>
     <h1>Revisa tu correo</h1>
     <div class="email-note">

@@ -61,7 +61,7 @@ function downloadPageHtml(name: string, buttons: string): string {
   *{box-sizing:border-box}
   body{margin:0;padding:0;background:#fbf7ed;font-family:Arial,sans-serif;color:#172116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
   .card{background:#fff;border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:0 4px 32px rgba(30,44,24,.12)}
-  .brand{display:inline-block;background:#1d3522;color:#cfb035;font-weight:900;font-size:12px;letter-spacing:.08em;padding:6px 14px;border-radius:8px;margin-bottom:24px}
+  .logo{height:56px;width:auto;margin-bottom:24px;display:block}
   h1{margin:0 0 8px;font-size:22px;font-weight:800}
   .sub{margin:0 0 28px;font-size:15px;color:#636b5e;line-height:1.5}
   .file-btn{display:flex;align-items:center;gap:12px;background:#f7f3ea;border:1.5px solid #e8e0d0;border-radius:12px;padding:16px 18px;margin-bottom:12px;text-decoration:none;color:#172116;transition:border-color .15s,background .15s}
@@ -75,7 +75,7 @@ function downloadPageHtml(name: string, buttons: string): string {
 </head>
 <body>
   <div class="card">
-    <div class="brand">CAPNODIS</div>
+    <picture><source srcset="https://capnodis.com/assets/loogo.webp" type="image/webp"><img src="https://capnodis.com/assets/loogo.png" alt="Capnodis" class="logo"></picture>
     <h1>Tus materiales están listos${greeting}!</h1>
     <p class="sub">Descarga cada archivo por separado. Puedes volver a este enlace durante <strong>30 días</strong>.</p>
     ${buttons}
