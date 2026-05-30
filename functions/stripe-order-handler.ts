@@ -43,12 +43,16 @@ async function processOrder(session: any) {
 
   const email = session.customer_details?.email ?? session.customer_email ?? ''
   const name = session.customer_details?.name ?? ''
+  const phone = session.customer_details?.phone ?? ''
+  const country = session.customer_details?.address?.country ?? ''
 
   const { data: order, error: orderErr } = await admin.database
     .from('orders')
     .insert([{
       customer_email: email,
       customer_name: name,
+      customer_phone: phone,
+      billing_country: country,
       stripe_session_id: session.id,
       stripe_payment_status: 'paid',
       amount: (session.amount_total ?? 1990) / 100,

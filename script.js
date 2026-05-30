@@ -1,5 +1,5 @@
 (() => {
-  const checkoutUrl = 'https://checkout.stripe.com/REPLACE_WITH_REAL_CHECKOUT_URL';
+  const checkoutUrl = 'https://buy.stripe.com/8x2fZh3Hz3YzgPH2fm6AM0J';
   const header = document.querySelector('[data-header]');
   const stickyBuy = document.querySelector('[data-sticky-buy]');
   const navToggle = document.querySelector('[data-nav-toggle]');
