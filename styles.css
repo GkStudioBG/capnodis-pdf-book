@@ -91,8 +91,10 @@ p { margin: 0 0 1rem; }
 .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 800; letter-spacing: -0.01em; border: 1px solid transparent; cursor: pointer; transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease; }
 .button:hover { transform: translateY(-2px); }
 .button:focus-visible { outline: 3px solid rgba(201, 139, 55, 0.45); outline-offset: 3px; }
-.button-primary { color: var(--surface); background: linear-gradient(135deg, var(--green-900), var(--green-700)); box-shadow: 0 12px 26px rgba(29, 53, 34, 0.24); }
-.button-primary:hover { box-shadow: 0 16px 30px rgba(29, 53, 34, 0.28); }
+.button-primary { position: relative; overflow: hidden; color: var(--green-900); background: linear-gradient(135deg, #cfb035, #e2c040, #cfb035); box-shadow: 0 12px 26px rgba(207, 176, 53, 0.38); }
+.button-primary:hover { box-shadow: 0 16px 30px rgba(207, 176, 53, 0.50); }
+.button-primary::after { content: ''; position: absolute; top: 0; left: -130%; width: 60%; height: 100%; background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%); transform: skewX(-15deg); animation: btn-shine 3.6s ease-in-out infinite; pointer-events: none; }
+@keyframes btn-shine { 0%,60% { left: -130%; } 80%,100% { left: 160%; } }
 .button-secondary { color: var(--green-900); background: rgba(255,255,255,0.72); border-color: var(--line); }
 .button-light { background: #fff7df; color: var(--green-900); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
 .button-small { min-height: 40px; padding: 0 16px; font-size: 0.92rem; }
@@ -249,6 +251,7 @@ details p { padding: 0 22px 22px; color: var(--muted); }
   .section { padding: 72px 0; }
   .hero { padding: 60px 0 60px; }
   .hero-grid, .two-col, .split-feature, .price-grid, .visual-band-grid { grid-template-columns: 1fr; }
+  .price-grid .price-card { order: -1; }
   .mechanism-grid { grid-template-columns: 1fr; }
   .bonus-cta { display: grid; }
   .evidence-grid { grid-template-columns: 1fr; gap: 16px; }
