@@ -101,16 +101,37 @@
   }
 
   function setupCheckoutLinks() {
+    const FBQ_CHECKOUT_PARAMS = {
+      content_name: 'Guía Práctica contra el Gusano Cabezudo en Almendro',
+      content_category: 'Digital PDF Guide',
+      content_type: 'product',
+      content_ids: ['capnodis_pdf_guide'],
+      num_items: 1,
+      value: 19.90,
+      currency: 'EUR'
+    };
+
     checkoutLinks.forEach((link) => {
       link.href = checkoutUrl;
       link.addEventListener('click', (event) => {
-        emitEvent('checkout_click', { value: 19.9, currency: 'EUR' });
         if (!hasRealCheckout) {
           event.preventDefault();
-          alert('Stripe checkout todavía no está conectado. Sustituye REPLACE_WITH_REAL_CHECKOUT_URL en script.js e index.html por el enlace real de Stripe.');
+          alert('Stripe checkout todavía no está conectado.');
           return;
         }
-        link.href = decorateCheckoutUrl(checkoutUrl);
+
+        event.preventDefault();
+        emitEvent('checkout_click', FBQ_CHECKOUT_PARAMS);
+
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'InitiateCheckout', FBQ_CHECKOUT_PARAMS);
+        }
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'checkout_click', ...FBQ_CHECKOUT_PARAMS });
+
+        const destination = decorateCheckoutUrl(checkoutUrl);
+        setTimeout(() => { window.location.href = destination; }, 300);
       });
     });
   }
