@@ -69,6 +69,9 @@ async function init() {
     return
   }
 
+  // Fire Purchase immediately — independent of download token fetch
+  trackMetaPurchase(sessionId)
+
   // Stripe webhook puede tardar unos segundos — reintentamos 5 veces
   let token = null
   for (let i = 0; i < 5; i++) {
@@ -84,29 +87,36 @@ async function init() {
   }
 
   if (token) {
-    trackPurchaseOnce(sessionId)
     showDownloads(token)
   } else {
     showEmailFallback()
   }
 }
 
-function trackPurchaseOnce(sessionId) {
+function trackMetaPurchase(sessionId) {
   if (!sessionId) return
   const key = 'meta_purchase_tracked_' + sessionId
   if (localStorage.getItem(key)) return
-  if (typeof window.fbq !== 'function') return
-  window.fbq('track', 'Purchase', {
-    content_name: 'Guía Práctica contra el Gusano Cabezudo en Almendro',
-    content_category: 'Digital PDF Guide',
-    content_type: 'product',
-    content_ids: ['capnodis_pdf_guide'],
-    num_items: 1,
-    value: 19.90,
-    currency: 'EUR',
-    order_id: sessionId
-  })
-  localStorage.setItem(key, 'true')
+
+  const send = () => {
+    if (typeof window.fbq !== 'function') return false
+    window.fbq('track', 'Purchase', {
+      content_name: 'Guía Práctica contra el Gusano Cabezudo en Almendro',
+      content_category: 'Digital PDF Guide',
+      content_type: 'product',
+      content_ids: ['capnodis_pdf_guide'],
+      num_items: 1,
+      value: 19.90,
+      currency: 'EUR',
+      order_id: sessionId
+    })
+    localStorage.setItem(key, 'true')
+    return true
+  }
+
+  if (!send()) {
+    setTimeout(send, 700)
+  }
 }
 
 function showDownloads(token) {

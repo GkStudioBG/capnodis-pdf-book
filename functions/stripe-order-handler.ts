@@ -14,7 +14,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   let event: any
   try {
-    event = await verifyAndParse(body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET')!)
+    event = await verifyAndParse(body, signature, Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET')!)
   } catch (err) {
     console.error('Webhook signature failed:', err)
     return new Response('Invalid signature', { status: 400 })

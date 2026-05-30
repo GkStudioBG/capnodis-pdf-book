@@ -15,7 +15,6 @@
 
     if (typeof window.fbq === 'function') {
       const fbEvents = {
-        checkout_click: 'InitiateCheckout',
         hero_buy_click: 'ViewContent',
         sticky_buy: 'ViewContent',
         final_cta: 'ViewContent'
