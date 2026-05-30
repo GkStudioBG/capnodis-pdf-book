@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gracias por tu compra — Capnodis</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:0;background:#fbf7ed;font-family:Arial,sans-serif;color:#172116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
+  .card{background:#fff;border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:0 4px 32px rgba(30,44,24,.12);text-align:center}
+  .brand{display:inline-block;background:#1d3522;color:#cfb035;font-weight:900;font-size:12px;letter-spacing:.08em;padding:6px 14px;border-radius:8px;margin-bottom:24px}
+  h1{margin:0 0 10px;font-size:22px;font-weight:800}
+  .sub{margin:0 0 28px;font-size:15px;color:#636b5e;line-height:1.5}
+  .files{text-align:left}
+  .file-btn{display:flex;align-items:center;gap:12px;background:#f7f3ea;border:1.5px solid #e8e0d0;border-radius:12px;padding:16px 18px;margin-bottom:12px;text-decoration:none;color:#172116;transition:border-color .15s,background .15s}
+  .file-btn:hover{background:#f0e9d8;border-color:#cfb035}
+  .file-icon{font-size:22px;flex-shrink:0}
+  .file-label{flex:1;font-weight:600;font-size:15px}
+  .file-dl{font-size:13px;color:#636b5e;flex-shrink:0}
+  .note{margin-top:24px;font-size:12px;color:#9aa394;line-height:1.6}
+  .note a{color:#1d3522;font-weight:700}
+  .spinner{width:36px;height:36px;border:3px solid #e8e0d0;border-top-color:#1d3522;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .icon-big{font-size:48px;margin-bottom:16px}
+  .email-note{background:#f7f3ea;border-radius:12px;padding:16px 20px;font-size:14px;color:#3a4a35;line-height:1.6;margin-top:4px;margin-bottom:24px;text-align:left}
+  .email-note strong{color:#172116}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="brand">CAPNODIS</div>
+  <div class="spinner" id="spinner"></div>
+  <p style="color:#636b5e;font-size:15px" id="loading-text">Verificando tu compra…</p>
+</div>
+
+<script>
+const DOWNLOAD_BASE = 'https://je8fwbkk.eu-central.insforge.app/functions/download-file'
+const TOKEN_API     = 'https://je8fwbkk.eu-central.insforge.app/functions/session-to-token'
+
+const FILES = [
+  { key: 'guia-principal.pdf',    label: 'Guía principal PDF',              icon: '📖' },
+  { key: 'bono1-calendario.pdf',  label: 'Bono 1: Calendario mensual',      icon: '📅' },
+  { key: 'bono2-checklist.pdf',   label: 'Bono 2: Checklist de diagnóstico',icon: '✅' },
+  { key: 'bono3-decision.pdf',    label: 'Bono 3: Árbol de decisión',       icon: '🌿' },
+]
+
+async function init() {
+  const params = new URLSearchParams(location.search)
+  const sessionId = params.get('session_id')
+
+  if (!sessionId) {
+    showEmailFallback()
+    return
+  }
+
+  // Stripe webhook puede tardar unos segundos — reintentamos 5 veces
+  let token = null
+  for (let i = 0; i < 5; i++) {
+    try {
+      const res = await fetch(`${TOKEN_API}?session_id=${encodeURIComponent(sessionId)}`)
+      if (res.ok) {
+        const json = await res.json()
+        token = json.token
+        break
+      }
+    } catch (_) {}
+    await new Promise(r => setTimeout(r, 2500))
+  }
+
+  if (token) {
+    showDownloads(token)
+  } else {
+    showEmailFallback()
+  }
+}
+
+function showDownloads(token) {
+  const card = document.getElementById('card')
+  const buttons = FILES.map(f => `
+    <a href="${DOWNLOAD_BASE}?token=${encodeURIComponent(token)}&file=${f.key}" class="file-btn">
+      <span class="file-icon">${f.icon}</span>
+      <span class="file-label">${f.label}</span>
+      <span class="file-dl">Descargar →</span>
+    </a>`).join('')
+
+  card.innerHTML = `
+    <div class="brand">CAPNODIS</div>
+    <div class="icon-big">🎉</div>
+    <h1>¡Gracias por tu compra!</h1>
+    <p class="sub">Descarga tus materiales ahora. También te hemos enviado este enlace por correo.</p>
+    <div class="files">${buttons}</div>
+    <p class="note">¿Algún problema? <a href="mailto:Infinitycreativeltd@gmail.com">Infinitycreativeltd@gmail.com</a></p>
+  `
+}
+
+function showEmailFallback() {
+  const card = document.getElementById('card')
+  card.innerHTML = `
+    <div class="brand">CAPNODIS</div>
+    <div class="icon-big">📩</div>
+    <h1>Revisa tu correo</h1>
+    <div class="email-note">
+      Te hemos enviado un email con el enlace de descarga.<br><br>
+      <strong>¿No lo ves?</strong> Revisa la carpeta de spam o escríbenos y te lo reenviamos.
+    </div>
+    <p class="note"><a href="mailto:Infinitycreativeltd@gmail.com">Infinitycreativeltd@gmail.com</a></p>
+  `
+}
+
+init()
+</script>
+</body>
+</html>
