@@ -1,35 +1,54 @@
 import { createAdminClient } from 'https://esm.sh/@insforge/sdk@latest'
 
+const STRIPE_API = 'https://api.stripe.com/v1'
+
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
 
-  const body = await req.text()
-  const signature = req.headers.get('stripe-signature')
-
-  if (!signature) {
-    return new Response('Missing stripe-signature', { status: 400 })
-  }
-
   let event: any
   try {
-    event = await verifyAndParse(body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET')!)
-  } catch (err) {
-    console.error('Webhook signature failed:', err)
-    return new Response('Invalid signature', { status: 400 })
+    event = JSON.parse(await req.text())
+  } catch {
+    return new Response('Invalid payload', { status: 400 })
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object
-    if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
-      try {
-        await processOrder(session)
-      } catch (err) {
-        console.error('Order processing failed:', err)
-        return new Response('Processing error', { status: 500 })
-      }
-    }
+  if (event?.type !== 'checkout.session.completed') {
+    return Response.json({ received: true })
+  }
+
+  const sessionId = event?.data?.object?.id
+  if (!sessionId || typeof sessionId !== 'string') {
+    return new Response('Missing session id', { status: 400 })
+  }
+
+  // Authoritative verification: re-fetch the session straight from Stripe.
+  // This proves the event is genuine without depending on the webhook signing
+  // secret (which proved fragile to misconfigure), and gives us trusted
+  // payment + customer data to build the order from.
+  const stripeKey = Deno.env.get('STRIPE_LIVE_SECRET_KEY')!
+  const resp = await fetch(`${STRIPE_API}/checkout/sessions/${sessionId}`, {
+    headers: { Authorization: `Bearer ${stripeKey}` },
+  })
+  if (!resp.ok) {
+    console.error('Stripe session fetch failed:', resp.status, await resp.text())
+    return new Response('Could not verify session', { status: 400 })
+  }
+  const session = await resp.json()
+
+  if (!session.livemode) {
+    return Response.json({ received: true, ignored: 'test mode' })
+  }
+  if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
+    return Response.json({ received: true, ignored: `payment_status=${session.payment_status}` })
+  }
+
+  try {
+    await processOrder(session)
+  } catch (err) {
+    console.error('Order processing failed:', err)
+    return new Response('Processing error', { status: 500 })
   }
 
   return Response.json({ received: true })
@@ -45,6 +64,8 @@ async function processOrder(session: any) {
   const name = session.customer_details?.name ?? ''
   const phone = session.customer_details?.phone ?? ''
   const country = session.customer_details?.address?.country ?? ''
+
+  if (!email) throw new Error('No customer email on session')
 
   // Idempotency: skip if order already exists for this session
   const { data: existing } = await admin.database
@@ -154,22 +175,4 @@ function emailHtml(firstName: string, url: string): string {
 </table>
 </body>
 </html>`
-}
-
-async function verifyAndParse(payload: string, signature: string, secret: string): Promise<any> {
-  const parts = signature.split(',')
-  const ts = parts.find(p => p.startsWith('t='))?.slice(2)
-  const v1 = parts.find(p => p.startsWith('v1='))?.slice(3)
-  if (!ts || !v1) throw new Error('Malformed signature')
-
-  // Strip 'whsec_' prefix — Stripe signs with the raw bytes after the prefix
-  const secretKey = secret.startsWith('whsec_') ? secret.slice(6) : secret
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(secretKey),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  )
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${ts}.${payload}`))
-  const computed = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
-  if (computed !== v1) throw new Error('Signature mismatch')
-  return JSON.parse(payload)
 }
