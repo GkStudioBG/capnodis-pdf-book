@@ -42,6 +42,29 @@
       stored.landing_time = new Date().toISOString();
       localStorage.setItem('capnodis_attribution', JSON.stringify(stored));
     }
+
+    trackVisit(stored);
+  }
+
+  function trackVisit(attribution) {
+    try {
+      const payload = {
+        page: window.location.pathname || '/',
+        utm_source:   attribution.utm_source   || null,
+        utm_medium:   attribution.utm_medium   || null,
+        utm_campaign: attribution.utm_campaign || null,
+        utm_content:  attribution.utm_content  || null,
+        utm_term:     attribution.utm_term     || null,
+        fbclid:       attribution.fbclid       || null,
+        referrer:     document.referrer        || null,
+      };
+      fetch('https://je8fwbkk.eu-central.insforge.app/functions/track-visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   function decorateCheckoutUrl(url) {

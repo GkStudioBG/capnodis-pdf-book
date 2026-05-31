@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Capnodis Admin</title>
+<style>
+:root {
+  --green: #1d3522;
+  --green-mid: #2d5035;
+  --green-light: #3a6644;
+  --gold: #cfb035;
+  --gold-light: #e2c040;
+  --bg: #0f1a12;
+  --bg2: #162019;
+  --bg3: #1e2e21;
+  --card: #1a2b1d;
+  --card2: #223027;
+  --border: rgba(255,255,255,.08);
+  --text: #e8f0e9;
+  --text2: #8fa893;
+  --text3: #5a7260;
+  --red: #e05555;
+  --cyan: #4dd0b0;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overscroll-behavior:none}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;font-size:15px;line-height:1.4;overflow:hidden}
+
+/* ── App Shell ── */
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+
+/* ── Status bar spacer ── */
+.status-bar{height:env(safe-area-inset-top,0px);background:var(--bg)}
+
+/* ── Top Header ── */
+.top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 10px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+}
+.top-bar-logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;color:var(--text)}
+.top-bar-logo span{color:var(--gold)}
+.logo-dot{width:8px;height:8px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.refresh-btn{
+  width:38px;height:38px;border:none;background:var(--card);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);
+  font-size:18px;transition:background .15s;
+}
+.refresh-btn:active{background:var(--card2)}
+
+/* ── Scrollable content ── */
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(72px + var(--safe-bottom))}
+
+/* ── Sections ── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── Stats Hero ── */
+.hero{
+  background:linear-gradient(160deg,var(--green-mid),var(--bg2));
+  padding:20px 20px 24px;
+  border-bottom:1px solid var(--border);
+}
+.hero-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.hero-value{font-size:42px;font-weight:800;color:var(--text);line-height:1}
+.hero-value span{font-size:22px;font-weight:600;color:var(--text2)}
+.hero-sub{font-size:13px;color:var(--text2);margin-top:6px}
+.hero-sub b{color:var(--cyan)}
+
+/* ── Stat cards row ── */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 16px 0}
+.stat-card{
+  background:var(--card);border-radius:var(--radius-sm);padding:14px 12px;
+  border:1px solid var(--border);
+}
+.stat-card-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-card-value{font-size:20px;font-weight:700;color:var(--text)}
+.stat-card-value.gold{color:var(--gold)}
+.stat-card-value.cyan{color:var(--cyan)}
+.stat-card-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── Period tabs ── */
+.period-tabs{display:flex;gap:6px;padding:16px 16px 0;overflow-x:auto;scrollbar-width:none}
+.period-tabs::-webkit-scrollbar{display:none}
+.period-tab{
+  flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:13px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.period-tab.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
+.period-tab:active{opacity:.7}
+
+/* ── Section label ── */
+.section-label{
+  font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;
+  padding:20px 16px 8px;
+}
+
+/* ── Mini chart ── */
+.chart-wrap{padding:0 16px 4px;overflow:hidden}
+.chart{display:flex;align-items:flex-end;gap:4px;height:56px}
+.chart-bar{
+  flex:1;background:var(--card2);border-radius:3px 3px 0 0;
+  min-height:3px;transition:background .2s;position:relative;
+}
+.chart-bar.has-orders{background:var(--green-light)}
+.chart-bar.today{background:var(--gold)}
+.chart-labels{display:flex;gap:4px;padding:0 16px;margin-top:4px}
+.chart-labels span{flex:1;font-size:9px;color:var(--text3);text-align:center}
+
+/* ── Orders list ── */
+.orders-list{padding:0 16px}
+.order-card{
+  background:var(--card);border-radius:var(--radius);
+  border:1px solid var(--border);
+  padding:14px 16px;margin-bottom:10px;
+  cursor:pointer;transition:background .15s;
+  display:flex;flex-direction:column;gap:6px;
+}
+.order-card:active{background:var(--card2)}
+.order-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+.order-email{font-size:14px;font-weight:600;color:var(--text);word-break:break-all}
+.order-amount{font-size:16px;font-weight:700;color:var(--gold);flex-shrink:0;margin-left:10px}
+.order-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.order-time{font-size:12px;color:var(--text3)}
+.order-badge{
+  font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;
+}
+.badge-paid{background:rgba(77,208,176,.15);color:var(--cyan)}
+.badge-free{background:rgba(207,176,53,.12);color:var(--gold)}
+.order-session{font-size:11px;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── UTM section ── */
+.utm-list{padding:0 16px}
+.utm-row{
+  background:var(--card);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-bottom:8px;
+  border:1px solid var(--border);
+}
+.utm-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.utm-source{font-size:14px;font-weight:600;color:var(--text)}
+.utm-count{font-size:14px;font-weight:700;color:var(--gold)}
+.utm-bar-wrap{background:var(--bg3);border-radius:3px;height:5px;overflow:hidden}
+.utm-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green-light),var(--gold));transition:width .6s ease}
+.utm-pct{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 24px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* ── Bottom Nav ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(15,26,18,.92);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom:var(--safe-bottom);
+  z-index:100;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 4px 6px;cursor:pointer;border:none;background:transparent;
+  color:var(--text3);font-size:10px;gap:4px;transition:color .15s;
+}
+.nav-item.active{color:var(--gold)}
+.nav-item:active{opacity:.6}
+.nav-icon{font-size:22px;line-height:1}
+
+/* ── Login screen ── */
+#login{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;z-index:200;
+}
+.login-logo{font-size:48px;margin-bottom:8px}
+.login-title{font-size:24px;font-weight:800;color:var(--text);margin-bottom:4px}
+.login-sub{font-size:14px;color:var(--text2);margin-bottom:36px;text-align:center}
+.login-field{
+  width:100%;max-width:360px;
+  background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-size:17px;padding:16px 18px;
+  outline:none;margin-bottom:14px;
+  -webkit-appearance:none;
+}
+.login-field:focus{border-color:var(--gold)}
+.login-btn{
+  width:100%;max-width:360px;
+  background:var(--gold);color:#000;border:none;border-radius:var(--radius);
+  font-size:17px;font-weight:700;padding:16px;cursor:pointer;
+  transition:opacity .15s;
+}
+.login-btn:active{opacity:.85}
+.login-err{font-size:13px;color:var(--red);margin-top:10px;display:none}
+
+/* ── Order detail sheet ── */
+#sheet-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;
+  display:none;opacity:0;transition:opacity .25s;
+  backdrop-filter:blur(4px);
+}
+#sheet-overlay.open{display:block}
+#sheet-overlay.visible{opacity:1}
+#sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--card);border-radius:24px 24px 0 0;
+  padding:0 0 var(--safe-bottom);
+  z-index:301;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80dvh;overflow-y:auto;
+}
+#sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 20px}
+.sheet-content{padding:0 20px 20px}
+.sheet-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px}
+.sheet-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.sheet-row:last-child{border:none}
+.sheet-key{font-size:13px;color:var(--text3)}
+.sheet-val{font-size:13px;color:var(--text);text-align:right;word-break:break-all;max-width:65%}
+
+/* ── Loading ── */
+.loader{
+  display:flex;align-items:center;justify-content:center;padding:60px 0;
+}
+.spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Visitors section ── */
+.visits-hero{
+  margin:16px 16px 0;background:var(--card);border-radius:var(--radius);
+  border:1px solid var(--border);padding:16px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.visits-big{font-size:36px;font-weight:800;color:var(--cyan)}
+.visits-label{font-size:12px;color:var(--text3);margin-top:2px}
+.conv-wrap{text-align:right}
+.conv-big{font-size:28px;font-weight:700;color:var(--gold)}
+.conv-label{font-size:12px;color:var(--text3);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <div class="login-logo">🌿</div>
+  <div class="login-title">Capnodis Admin</div>
+  <div class="login-sub">Panel de administración</div>
+  <input type="password" class="login-field" id="pwd-input" placeholder="Contraseña" autocomplete="current-password">
+  <button class="login-btn" id="login-btn">Entrar</button>
+  <div class="login-err" id="login-err">Contraseña incorrecta</div>
+</div>
+
+<!-- Main app -->
+<div id="app" style="display:none">
+  <div class="status-bar"></div>
+
+  <div class="top-bar">
+    <div class="top-bar-logo">
+      <div class="logo-dot"></div>
+      <span>Capnodis</span> <span style="color:var(--text2);font-weight:400">Admin</span>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" title="Refresh">↻</button>
+  </div>
+
+  <div id="content">
+    <!-- Dashboard section -->
+    <div class="section active" id="sec-dashboard">
+      <div id="dashboard-content"><div class="loader"><div class="spin"></div></div></div>
+    </div>
+
+    <!-- Orders section -->
+    <div class="section" id="sec-orders">
+      <div id="orders-content"><div class="loader"><div class="spin"></div></div></div>
+    </div>
+
+    <!-- Traffic section -->
+    <div class="section" id="sec-traffic">
+      <div id="traffic-content"><div class="loader"><div class="spin"></div></div></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="dashboard">
+      <span class="nav-icon">📊</span>Dashboard
+    </button>
+    <button class="nav-item" data-tab="orders">
+      <span class="nav-icon">📦</span>Pedidos
+    </button>
+    <button class="nav-item" data-tab="traffic">
+      <span class="nav-icon">📡</span>Tráfico
+    </button>
+  </nav>
+</div>
+
+<!-- Order detail sheet -->
+<div id="sheet-overlay">
+  <div id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content" id="sheet-content"></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://je8fwbkk.eu-central.insforge.app/functions/admin-api'
+const SESSION_KEY = 'capnodis_admin_pwd'
+
+let cachedData = null
+let currentPeriod = 'week'
+let currentTab = 'dashboard'
+
+// ── Auth ──────────────────────────────────────────────────────────
+const loginScreen = document.getElementById('login')
+const appEl = document.getElementById('app')
+const pwdInput = document.getElementById('pwd-input')
+const loginBtn = document.getElementById('login-btn')
+const loginErr = document.getElementById('login-err')
+
+function getSavedPwd() { return sessionStorage.getItem(SESSION_KEY) || '' }
+function savePwd(p) { sessionStorage.setItem(SESSION_KEY, p) }
+
+async function tryLogin(pwd) {
+  loginBtn.textContent = '...'
+  loginBtn.disabled = true
+  try {
+    const res = await fetch(API + '?section=dashboard', {
+      headers: { 'x-admin-password': pwd }
+    })
+    if (res.ok) {
+      savePwd(pwd)
+      loginScreen.style.display = 'none'
+      appEl.style.display = 'flex'
+      const json = await res.json()
+      cachedData = json
+      renderAll()
+    } else {
+      loginErr.style.display = 'block'
+    }
+  } catch (_) {
+    loginErr.style.display = 'block'
+    loginErr.textContent = 'Error de conexión'
+  }
+  loginBtn.textContent = 'Entrar'
+  loginBtn.disabled = false
+}
+
+loginBtn.addEventListener('click', () => tryLogin(pwdInput.value.trim()))
+pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwdInput.value.trim()) })
+
+// Auto-login if session saved
+const saved = getSavedPwd()
+if (saved) tryLogin(saved)
+
+// ── Refresh ───────────────────────────────────────────────────────
+document.getElementById('refresh-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('refresh-btn')
+  btn.style.transform = 'rotate(360deg)'
+  btn.style.transition = 'transform .5s'
+  setTimeout(() => { btn.style.transform = ''; btn.style.transition = '' }, 500)
+  await loadData()
+})
+
+async function loadData() {
+  try {
+    const res = await fetch(API + '?section=dashboard', {
+      headers: { 'x-admin-password': getSavedPwd() }
+    })
+    if (res.ok) {
+      cachedData = await res.json()
+      renderAll()
+    }
+  } catch (_) {}
+}
+
+// ── Tab navigation ────────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentTab = btn.dataset.tab
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'))
+    document.getElementById('sec-' + currentTab).classList.add('active')
+    if (cachedData) renderAll()
+  })
+})
+
+// ── Render all ───────────────────────────────────────────────────
+function renderAll() {
+  if (!cachedData) return
+  renderDashboard()
+  renderOrders()
+  renderTraffic()
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────
+function renderDashboard() {
+  const d = cachedData
+  const s = d.stats
+  const periodData = s[currentPeriod] || s.week
+
+  const orders = d.recent || []
+  const dailyEntries = Object.entries(d.daily || {})
+  const maxBar = Math.max(...dailyEntries.map(([,v]) => v), 1)
+  const today = new Date().toISOString().slice(0, 10)
+
+  const bars = dailyEntries.map(([day, count]) => {
+    const height = Math.round((count / maxBar) * 100)
+    const isToday = day === today
+    const cls = isToday ? 'today' : (count > 0 ? 'has-orders' : '')
+    return `<div class="chart-bar ${cls}" style="height:${Math.max(height,4)}%" title="${day}: ${count}"></div>`
+  }).join('')
+
+  // Show only every 3rd label
+  const labels = dailyEntries.map(([day], i) => {
+    const d = new Date(day)
+    const label = (i % 3 === 0) ? `${d.getDate()}/${d.getMonth()+1}` : ''
+    return `<span>${label}</span>`
+  }).join('')
+
+  document.getElementById('dashboard-content').innerHTML = `
+    <div class="hero">
+      <div class="hero-label">Ingresos totales</div>
+      <div class="hero-value"><span>€</span>${s.totalRevenue.toFixed(2)}</div>
+      <div class="hero-sub"><b>${s.totalOrders}</b> pedidos · <b>${s.totalVisits}</b> visitas · Conv. <b>${s.convRate}%</b></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-label">Hoy</div>
+        <div class="stat-card-value gold">€${s.today.revenue.toFixed(0)}</div>
+        <div class="stat-card-sub">${s.today.orders} ped.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Semana</div>
+        <div class="stat-card-value gold">€${s.week.revenue.toFixed(0)}</div>
+        <div class="stat-card-sub">${s.week.orders} ped.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Mes</div>
+        <div class="stat-card-value cyan">€${s.month.revenue.toFixed(0)}</div>
+        <div class="stat-card-sub">${s.month.orders} ped.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Pedidos — últimos 14 días</div>
+    <div class="chart-wrap">
+      <div class="chart">${bars}</div>
+    </div>
+    <div class="chart-labels">${labels}</div>
+
+    <div class="section-label">Últimos pedidos</div>
+    <div class="orders-list">
+      ${orders.slice(0, 5).map(o => orderCard(o)).join('') || '<div class="empty"><div class="empty-icon">📦</div>Sin pedidos</div>'}
+    </div>
+  `
+  bindOrderCards()
+}
+
+// ── Orders ────────────────────────────────────────────────────────
+function renderOrders() {
+  const orders = cachedData?.recent || []
+  document.getElementById('orders-content').innerHTML = `
+    <div class="section-label">Todos los pedidos (${orders.length})</div>
+    <div class="orders-list">
+      ${orders.map(o => orderCard(o)).join('') || '<div class="empty"><div class="empty-icon">📦</div>Sin pedidos</div>'}
+    </div>
+  `
+  bindOrderCards()
+}
+
+function orderCard(o) {
+  const ago = timeAgo(o.created_at)
+  const isReal = o.amount >= 1
+  const badge = isReal
+    ? `<span class="order-badge badge-paid">€${Number(o.amount).toFixed(2)}</span>`
+    : `<span class="order-badge badge-free">Gratis</span>`
+  return `
+    <div class="order-card" data-id="${o.id}" data-order='${JSON.stringify(o).replace(/'/g,"&#39;")}'>
+      <div class="order-card-top">
+        <div class="order-email">${o.customer_email || '—'}</div>
+        <div class="order-amount">${isReal ? '€' + Number(o.amount).toFixed(2) : '€0'}</div>
+      </div>
+      <div class="order-meta">
+        ${badge}
+        <span class="order-time">${ago}</span>
+        ${o.billing_country ? `<span class="order-badge" style="background:rgba(255,255,255,.07);color:var(--text2)">${o.billing_country}</span>` : ''}
+      </div>
+      <div class="order-session">${o.stripe_session_id || ''}</div>
+    </div>`
+}
+
+function bindOrderCards() {
+  document.querySelectorAll('.order-card').forEach(card => {
+    card.addEventListener('click', () => {
+      try { openSheet(JSON.parse(card.dataset.order.replace(/&#39;/g,"'"))) } catch(_) {}
+    })
+  })
+}
+
+// ── Traffic ───────────────────────────────────────────────────────
+function renderTraffic() {
+  const s = cachedData?.stats || {}
+  const sources = cachedData?.sources || []
+
+  document.getElementById('traffic-content').innerHTML = `
+    <div class="visits-hero">
+      <div>
+        <div class="visits-big">${s.totalVisits || 0}</div>
+        <div class="visits-label">Visitas (30 días)</div>
+      </div>
+      <div class="conv-wrap">
+        <div class="conv-big">${s.convRate || 0}%</div>
+        <div class="conv-label">Conversión</div>
+      </div>
+    </div>
+
+    <div class="section-label">Fuentes de tráfico</div>
+    <div class="utm-list">
+      ${sources.length ? sources.map(src => `
+        <div class="utm-row">
+          <div class="utm-top">
+            <div class="utm-source">${sourceLabel(src.source)}</div>
+            <div class="utm-count">${src.count}</div>
+          </div>
+          <div class="utm-bar-wrap">
+            <div class="utm-bar" style="width:${src.pct}%"></div>
+          </div>
+          <div class="utm-pct">${src.pct}% del total</div>
+        </div>`).join('')
+      : '<div class="empty"><div class="empty-icon">📡</div><div>Sin datos de tráfico aún</div><div style="font-size:13px;margin-top:8px">Las visitas aparecerán aquí</div></div>'}
+    </div>
+  `
+}
+
+function sourceLabel(src) {
+  const map = {
+    facebook: '📘 Facebook',
+    instagram: '📸 Instagram',
+    google: '🔍 Google',
+    direct: '🔗 Directo',
+    organic: '🌱 Orgánico',
+    email: '📧 Email',
+    twitter: '🐦 Twitter',
+    tiktok: '🎵 TikTok',
+  }
+  return map[src?.toLowerCase()] || `🌐 ${src}`
+}
+
+// ── Order sheet ───────────────────────────────────────────────────
+function openSheet(order) {
+  const rows = [
+    ['Email', order.customer_email || '—'],
+    ['Nombre', order.customer_name || '—'],
+    ['Teléfono', order.customer_phone || '—'],
+    ['País', order.billing_country || '—'],
+    ['Importe', order.amount >= 1 ? `€${Number(order.amount).toFixed(2)}` : 'Gratis (cupón)'],
+    ['Estado', order.stripe_payment_status || '—'],
+    ['Fecha', order.created_at ? new Date(order.created_at).toLocaleString('es-ES') : '—'],
+    ['Sesión Stripe', order.stripe_session_id || '—'],
+    ['ID', order.id || '—'],
+  ]
+  document.getElementById('sheet-content').innerHTML = `
+    <div class="sheet-title">Detalle del pedido</div>
+    ${rows.map(([k, v]) => `<div class="sheet-row"><span class="sheet-key">${k}</span><span class="sheet-val">${v}</span></div>`).join('')}
+  `
+  const overlay = document.getElementById('sheet-overlay')
+  const sheet = document.getElementById('sheet')
+  overlay.style.display = 'block'
+  requestAnimationFrame(() => {
+    overlay.classList.add('visible')
+    sheet.classList.add('open')
+  })
+}
+
+document.getElementById('sheet-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSheet()
+})
+function closeSheet() {
+  const overlay = document.getElementById('sheet-overlay')
+  const sheet = document.getElementById('sheet')
+  overlay.classList.remove('visible')
+  sheet.classList.remove('open')
+  setTimeout(() => { overlay.style.display = 'none' }, 280)
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function timeAgo(iso) {
+  if (!iso) return '—'
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (d > 0) return `hace ${d}d`
+  if (h > 0) return `hace ${h}h`
+  if (m > 0) return `hace ${m}m`
+  return 'ahora'
+}
+
+// ── Pull-to-refresh (simple) ──────────────────────────────────────
+let startY = 0
+const content = document.getElementById('content')
+content.addEventListener('touchstart', e => { startY = e.touches[0].clientY }, { passive: true })
+content.addEventListener('touchend', e => {
+  const dy = e.changedTouches[0].clientY - startY
+  if (dy > 80 && content.scrollTop === 0) loadData()
+}, { passive: true })
+</script>
+</body>
+</html>
