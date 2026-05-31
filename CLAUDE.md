@@ -89,7 +89,13 @@ The only secret this function needs is **`STRIPE_LIVE_SECRET_KEY`** (a valid `sk
 - `session-to-token` — gracias.html exchanges `session_id` → download token.
 - `verify-download` — validates emailed token, renders the download page.
 - `download-file` — streams a single PDF from bucket `capnodis-files-spain` for a valid token.
-- `track-visit` / `admin-api` — analytics + admin dashboard (`admin.html`).
+- `track-visit` — first-party pageview/visit sink → `visits` table. Computes `is_bot` from UA; stores `visitor_id` + `session_id`.
+- `track-event` — funnel-event sink → `events` table (whitelisted events only: `checkout_click`, `scroll_50/75/90`, `faq_open`, CTA clicks). Called by `emitEvent()` in `script.js`.
+- `admin-api` — powers `admin.html`. Returns revenue/orders, unique visitors, per-source & per-creative conversion, and the view→checkout→purchase funnel.
+
+### Marketing attribution (source → sale)
+
+`script.js` mints a stable `visitor_id` (localStorage `capnodis_visitor_id`) and appends it to the Stripe checkout URL as **`client_reference_id`** (`decorateCheckoutUrl()`). On purchase, `stripe-order-handler` reads `session.client_reference_id`, finds the latest non-bot `visits` row for that visitor, and snapshots its UTM/fbclid/referrer onto the `orders` row. So attribution lives on `orders.utm_*` / `orders.visitor_id`. Conversion-by-source and the funnel are computed from `visits` + `events` + `orders`, all keyed by `visitor_id`. Full context: `MARKETING-TRACKING.md`; implementation history: `CAPNODIS-TRACKING-UPGRADE-REPORT.md`.
 
 ### Operating the backend (CLI cheat-sheet)
 

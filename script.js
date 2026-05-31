@@ -9,6 +9,42 @@
 
   const hasRealCheckout = !checkoutUrl.includes('REPLACE_WITH_REAL_CHECKOUT_URL');
 
+  // ── Visitor / session identity ────────────────────────────────────
+  const VISITOR_ID_KEY = 'capnodis_visitor_id';
+  const SESSION_ID_KEY = 'capnodis_session_id';
+  const SESSION_TTL_MS = 30 * 60 * 1000; // 30 min inactivity window
+  const TRACK_EVENT_URL = 'https://je8fwbkk.eu-central.insforge.app/functions/track-event';
+
+  function uuid() {
+    try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (_) {}
+    return 'x_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  }
+
+  function getOrCreateVisitorId() {
+    try {
+      let id = localStorage.getItem(VISITOR_ID_KEY);
+      if (!id) { id = uuid(); localStorage.setItem(VISITOR_ID_KEY, id); }
+      return id;
+    } catch (_) { return null; }
+  }
+
+  function getOrCreateSessionId() {
+    try {
+      const now = Date.now();
+      const raw = sessionStorage.getItem(SESSION_ID_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && p.id && p.expires > now) {
+          sessionStorage.setItem(SESSION_ID_KEY, JSON.stringify({ id: p.id, expires: now + SESSION_TTL_MS }));
+          return p.id;
+        }
+      }
+      const id = uuid();
+      sessionStorage.setItem(SESSION_ID_KEY, JSON.stringify({ id, expires: now + SESSION_TTL_MS }));
+      return id;
+    } catch (_) { return null; }
+  }
+
   function emitEvent(name, params = {}) {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: name, ...params });
@@ -22,6 +58,23 @@
       const fbEventName = fbEvents[name];
       if (fbEventName) window.fbq('track', fbEventName, params);
     }
+
+    // Persist the funnel event server-side (fire-and-forget). The endpoint
+    // whitelists which names it stores, so harmless to call for any event.
+    try {
+      fetch(TRACK_EVENT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_name: name,
+          visitor_id: getOrCreateVisitorId(),
+          session_id: getOrCreateSessionId(),
+          page: window.location.pathname || '/',
+          payload: params,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   function persistUtms() {
@@ -57,6 +110,8 @@
         utm_term:     attribution.utm_term     || null,
         fbclid:       attribution.fbclid       || null,
         referrer:     document.referrer        || null,
+        visitor_id:   getOrCreateVisitorId(),
+        session_id:   getOrCreateSessionId(),
       };
       fetch('https://je8fwbkk.eu-central.insforge.app/functions/track-visit', {
         method: 'POST',
@@ -70,10 +125,13 @@
   function decorateCheckoutUrl(url) {
     try {
       const decorated = new URL(url);
-      const attribution = JSON.parse(localStorage.getItem('capnodis_attribution') || '{}');
-      Object.entries(attribution).forEach(([key, value]) => {
-        if (value && key !== 'landing_time') decorated.searchParams.set(key, value);
-      });
+      // Round-trip the visitor_id through Stripe's client_reference_id so the
+      // webhook can join this checkout back to its originating visit (and thus
+      // its traffic source). Stripe Payment Links surface this param on the
+      // resulting checkout session. UTM params are NOT appended — Stripe drops
+      // arbitrary query params, and we snapshot attribution server-side instead.
+      const visitorId = getOrCreateVisitorId();
+      if (visitorId) decorated.searchParams.set('client_reference_id', visitorId);
       return decorated.toString();
     } catch (error) {
       return url;
@@ -177,12 +235,32 @@
     });
   }
 
+  function setupScrollMilestones() {
+    const fired = {};
+    const milestones = [50, 75, 90];
+    function check() {
+      const doc = document.documentElement;
+      const scrollable = doc.scrollHeight - doc.clientHeight;
+      if (scrollable <= 0) return;
+      const pct = (window.scrollY / scrollable) * 100;
+      milestones.forEach((m) => {
+        if (pct >= m && !fired[m]) {
+          fired[m] = true;
+          emitEvent('scroll_' + m, {});
+        }
+      });
+    }
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  }
+
   persistUtms();
   setupReveal();
   setupMobileNav();
   setupCheckoutLinks();
   setupTracking();
   setupFaqTracking();
+  setupScrollMilestones();
   updateScrollState();
 
   window.addEventListener('scroll', updateScrollState, { passive: true });

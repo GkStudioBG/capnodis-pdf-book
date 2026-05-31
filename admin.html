@@ -236,6 +236,22 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .conv-wrap{text-align:right}
 .conv-big{font-size:28px;font-weight:700;color:var(--gold)}
 .conv-label{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── Funnel widget ── */
+.funnel{padding:0 16px}
+.funnel-step{margin-bottom:10px}
+.funnel-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.funnel-name{font-size:13px;color:var(--text);font-weight:600}
+.funnel-count{font-size:13px;color:var(--text2);font-weight:700}
+.funnel-track{background:var(--bg3);border-radius:4px;height:22px;overflow:hidden}
+.funnel-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green-light),var(--gold));min-width:2px;transition:width .6s ease}
+.funnel-drop{font-size:11px;color:var(--text3);text-align:right;margin-top:3px}
+
+/* ── Source / creative rows (extended) ── */
+.utm-stats{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+.utm-stat{font-size:11px;color:var(--text3)}
+.utm-stat b{color:var(--cyan);font-weight:700}
+.utm-stat.rev b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -411,6 +427,32 @@ function renderAll() {
   renderTraffic()
 }
 
+// ── Фуния ─────────────────────────────────────────────────────────
+function funnelHtml(funnel) {
+  const f = funnel || { view: 0, initiate: 0, purchase: 0 }
+  const max = Math.max(f.view, 1)
+  const steps = [
+    { name: '👁️ Видяна страница', count: f.view },
+    { name: '🛒 Натиснат „Купи"', count: f.initiate },
+    { name: '✅ Покупка', count: f.purchase },
+  ]
+  return steps.map((st, i) => {
+    const w = st.count > 0 ? Math.max(Math.round((st.count / max) * 100), 4) : 0
+    let drop = ''
+    if (i > 0) {
+      const prev = steps[i - 1].count
+      const rate = prev > 0 ? Math.round((st.count / prev) * 100) : 0
+      drop = `<div class="funnel-drop">${rate}% от предходната стъпка</div>`
+    }
+    return `
+      <div class="funnel-step">
+        <div class="funnel-row"><span class="funnel-name">${st.name}</span><span class="funnel-count">${st.count}</span></div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:${w}%"></div></div>
+        ${drop}
+      </div>`
+  }).join('')
+}
+
 // ── Табло ─────────────────────────────────────────────────────────
 function renderDashboard() {
   const d = cachedData
@@ -437,7 +479,7 @@ function renderDashboard() {
     <div class="hero">
       <div class="hero-label">Общи приходи</div>
       <div class="hero-value"><span>€</span>${s.totalRevenue.toFixed(2)}</div>
-      <div class="hero-sub"><b>${s.totalOrders}</b> поръчки · <b>${s.totalVisits}</b> посещения · Конв. <b>${s.convRate}%</b></div>
+      <div class="hero-sub"><b>${s.totalOrders}</b> поръчки · <b>${s.uniqueVisitors ?? 0}</b> униك. посет. · Конв. <b>${s.convRate}%</b></div>
     </div>
 
     <div class="stat-row">
@@ -463,6 +505,9 @@ function renderDashboard() {
       <div class="chart">${bars}</div>
     </div>
     <div class="chart-labels">${labels}</div>
+
+    <div class="section-label">Фуния на конверсия (30 дни)</div>
+    <div class="funnel">${funnelHtml(d.funnel)}</div>
 
     <div class="section-label">Последни поръчки</div>
     <div class="orders-list">
@@ -517,12 +562,13 @@ function bindOrderCards() {
 function renderTraffic() {
   const s = cachedData?.stats || {}
   const sources = cachedData?.sources || []
+  const creatives = cachedData?.creatives || []
 
   document.getElementById('traffic-content').innerHTML = `
     <div class="visits-hero">
       <div>
-        <div class="visits-big">${s.totalVisits || 0}</div>
-        <div class="visits-label">Посещения (30 дни)</div>
+        <div class="visits-big">${s.uniqueVisitors || 0}</div>
+        <div class="visits-label">Уникални посетители (30 дни)</div>
       </div>
       <div class="conv-wrap">
         <div class="conv-big">${s.convRate || 0}%</div>
@@ -530,20 +576,39 @@ function renderTraffic() {
       </div>
     </div>
 
-    <div class="section-label">Трафик източници</div>
+    <div class="section-label">Трафик източници · конверсия</div>
     <div class="utm-list">
       ${sources.length ? sources.map(src => `
         <div class="utm-row">
           <div class="utm-top">
             <div class="utm-source">${sourceLabel(src.source)}</div>
-            <div class="utm-count">${src.count}</div>
+            <div class="utm-count">${src.visitors ?? src.count}</div>
           </div>
           <div class="utm-bar-wrap">
             <div class="utm-bar" style="width:${src.pct}%"></div>
           </div>
-          <div class="utm-pct">${src.pct}% от общото</div>
+          <div class="utm-stats">
+            <span class="utm-stat"><b>${src.orders ?? 0}</b> поръчки</span>
+            <span class="utm-stat"><b>${src.conv ?? 0}%</b> конв.</span>
+            <span class="utm-stat rev"><b>€${Number(src.revenue ?? 0).toFixed(2)}</b></span>
+          </div>
         </div>`).join('')
       : emptyState('📡', 'Все още няма данни за трафика', 'Посещенията ще се появят тук')}
+    </div>
+
+    <div class="section-label">Топ креативи (utm_content)</div>
+    <div class="utm-list">
+      ${creatives.length ? creatives.map(c => `
+        <div class="utm-row">
+          <div class="utm-top">
+            <div class="utm-source">${c.content === 'unattributed' ? '— без атрибуция' : '🎬 ' + c.content}</div>
+            <div class="utm-count">€${Number(c.revenue ?? 0).toFixed(2)}</div>
+          </div>
+          <div class="utm-stats">
+            <span class="utm-stat"><b>${c.orders ?? 0}</b> поръчки</span>
+          </div>
+        </div>`).join('')
+      : emptyState('🎬', 'Все още няма продажби по креатив', 'Появяват се след първите поръчки с utm_content')}
     </div>
   `
 }

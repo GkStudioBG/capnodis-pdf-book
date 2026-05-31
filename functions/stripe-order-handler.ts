@@ -76,6 +76,11 @@ async function processOrder(session: any) {
 
   if (existing) return
 
+  // Attribution join: the landing page round-trips its visitor_id through
+  // Stripe's client_reference_id. Snapshot the latest non-bot visit for that
+  // visitor onto the order so we can report source -> sale.
+  const attribution = await lookupAttribution(admin, session.client_reference_id)
+
   const { data: order, error: orderErr } = await admin.database
     .from('orders')
     .insert([{
@@ -86,6 +91,15 @@ async function processOrder(session: any) {
       stripe_session_id: session.id,
       stripe_payment_status: 'paid',
       amount: (session.amount_total ?? 1990) / 100,
+      visitor_id:   attribution.visitor_id,
+      utm_source:   attribution.utm_source,
+      utm_medium:   attribution.utm_medium,
+      utm_campaign: attribution.utm_campaign,
+      utm_content:  attribution.utm_content,
+      utm_term:     attribution.utm_term,
+      fbclid:       attribution.fbclid,
+      referrer:     attribution.referrer,
+      landing_time: attribution.landing_time,
     }])
     .select()
     .single()
@@ -108,6 +122,54 @@ async function processOrder(session: any) {
 
   const downloadUrl = `https://je8fwbkk.eu-central.insforge.app/functions/verify-download?token=${token}`
   await sendEmail(email, name, downloadUrl)
+}
+
+type Attribution = {
+  visitor_id: string | null
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_content: string | null
+  utm_term: string | null
+  fbclid: string | null
+  referrer: string | null
+  landing_time: string | null
+}
+
+const EMPTY_ATTRIBUTION: Attribution = {
+  visitor_id: null, utm_source: null, utm_medium: null, utm_campaign: null,
+  utm_content: null, utm_term: null, fbclid: null, referrer: null, landing_time: null,
+}
+
+async function lookupAttribution(admin: any, visitorId: unknown): Promise<Attribution> {
+  if (!visitorId || typeof visitorId !== 'string') return EMPTY_ATTRIBUTION
+
+  const { data, error } = await admin.database
+    .from('visits')
+    .select('utm_source, utm_medium, utm_campaign, utm_content, utm_term, fbclid, referrer, created_at')
+    .eq('visitor_id', visitorId)
+    .eq('is_bot', false)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error || !data) {
+    // No visit row (e.g. tracking blocked) — keep the visitor_id, null the rest.
+    console.warn('No visit found for visitor_id', visitorId, error?.message ?? '')
+    return { ...EMPTY_ATTRIBUTION, visitor_id: visitorId }
+  }
+
+  return {
+    visitor_id:   visitorId,
+    utm_source:   data.utm_source   ?? null,
+    utm_medium:   data.utm_medium   ?? null,
+    utm_campaign: data.utm_campaign ?? null,
+    utm_content:  data.utm_content  ?? null,
+    utm_term:     data.utm_term     ?? null,
+    fbclid:       data.fbclid       ?? null,
+    referrer:     data.referrer     ?? null,
+    landing_time: data.created_at   ?? null,
+  }
 }
 
 async function sendEmail(to: string, name: string, downloadUrl: string) {
