@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="bg">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -42,22 +42,25 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 /* ── Top Header ── */
 .top-bar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px 10px;
+  padding:10px 16px 10px;
   background:var(--bg);
   border-bottom:1px solid var(--border);
   flex-shrink:0;
-  position:relative;
+  gap:8px;
 }
-.top-bar-logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;color:var(--text)}
-.top-bar-logo span{color:var(--gold)}
-.logo-dot{width:8px;height:8px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-.refresh-btn{
-  width:38px;height:38px;border:none;background:var(--card);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);
-  font-size:18px;transition:background .15s;
+.top-bar-logo{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.top-logo-img{height:30px;width:auto;display:block;object-fit:contain}
+.logo-dot{width:7px;height:7px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+.top-bar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.action-btn{
+  width:36px;height:36px;border:none;background:var(--card);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--text2);font-size:16px;transition:background .15s;text-decoration:none;
+  flex-shrink:0;
 }
-.refresh-btn:active{background:var(--card2)}
+.action-btn:active{background:var(--card2)}
+.action-btn.danger:active{background:rgba(224,85,85,.2);color:var(--red)}
 
 /* ── Scrollable content ── */
 #content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(72px + var(--safe-bottom))}
@@ -89,17 +92,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .stat-card-value.gold{color:var(--gold)}
 .stat-card-value.cyan{color:var(--cyan)}
 .stat-card-sub{font-size:11px;color:var(--text3);margin-top:3px}
-
-/* ── Period tabs ── */
-.period-tabs{display:flex;gap:6px;padding:16px 16px 0;overflow-x:auto;scrollbar-width:none}
-.period-tabs::-webkit-scrollbar{display:none}
-.period-tab{
-  flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);
-  background:transparent;color:var(--text2);font-size:13px;cursor:pointer;
-  transition:all .15s;white-space:nowrap;
-}
-.period-tab.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
-.period-tab:active{opacity:.7}
 
 /* ── Section label ── */
 .section-label{
@@ -134,9 +126,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .order-amount{font-size:16px;font-weight:700;color:var(--gold);flex-shrink:0;margin-left:10px}
 .order-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .order-time{font-size:12px;color:var(--text3)}
-.order-badge{
-  font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;
-}
+.order-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
 .badge-paid{background:rgba(77,208,176,.15);color:var(--cyan)}
 .badge-free{background:rgba(207,176,53,.12);color:var(--gold)}
 .order-session{font-size:11px;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -184,9 +174,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:32px 24px;z-index:200;
 }
-.login-logo{font-size:48px;margin-bottom:8px}
-.login-title{font-size:24px;font-weight:800;color:var(--text);margin-bottom:4px}
-.login-sub{font-size:14px;color:var(--text2);margin-bottom:36px;text-align:center}
+.login-logo-wrap{margin-bottom:24px}
+.login-logo-wrap img{height:52px;width:auto;display:block}
+.login-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+.login-sub{font-size:14px;color:var(--text2);margin-bottom:36px;text-align:center;line-height:1.5}
 .login-field{
   width:100%;max-width:360px;
   background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);
@@ -230,9 +221,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .sheet-val{font-size:13px;color:var(--text);text-align:right;word-break:break-all;max-width:65%}
 
 /* ── Loading ── */
-.loader{
-  display:flex;align-items:center;justify-content:center;padding:60px 0;
-}
+.loader{display:flex;align-items:center;justify-content:center;padding:60px 0}
 .spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -251,40 +240,52 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </head>
 <body>
 
-<!-- Login -->
+<!-- Вход -->
 <div id="login">
-  <div class="login-logo">🌿</div>
-  <div class="login-title">Capnodis Admin</div>
-  <div class="login-sub">Panel de administración</div>
-  <input type="password" class="login-field" id="pwd-input" placeholder="Contraseña" autocomplete="current-password">
-  <button class="login-btn" id="login-btn">Entrar</button>
-  <div class="login-err" id="login-err">Contraseña incorrecta</div>
+  <div class="login-logo-wrap">
+    <picture>
+      <source srcset="assets/loogo.webp" type="image/webp">
+      <img src="assets/loogo.png" alt="Capnodis">
+    </picture>
+  </div>
+  <div class="login-title">Административен панел</div>
+  <div class="login-sub">Въведи паролата за достъп</div>
+  <input type="password" class="login-field" id="pwd-input" placeholder="Парола" autocomplete="current-password">
+  <button class="login-btn" id="login-btn">Влез</button>
+  <div class="login-err" id="login-err">Грешна парола</div>
 </div>
 
-<!-- Main app -->
+<!-- Главно приложение -->
 <div id="app" style="display:none">
   <div class="status-bar"></div>
 
   <div class="top-bar">
     <div class="top-bar-logo">
+      <picture>
+        <source srcset="assets/loogo.webp" type="image/webp">
+        <img src="assets/loogo.png" alt="Capnodis" class="top-logo-img">
+      </picture>
       <div class="logo-dot"></div>
-      <span>Capnodis</span> <span style="color:var(--text2);font-weight:400">Admin</span>
     </div>
-    <button class="refresh-btn" id="refresh-btn" title="Refresh">↻</button>
+    <div class="top-bar-actions">
+      <a href="https://capnodis.com" class="action-btn" title="Към сайта" target="_blank">🏠</a>
+      <button class="action-btn" id="refresh-btn" title="Опресни">↻</button>
+      <button class="action-btn danger" id="logout-btn" title="Изход">🚪</button>
+    </div>
   </div>
 
   <div id="content">
-    <!-- Dashboard section -->
+    <!-- Табло -->
     <div class="section active" id="sec-dashboard">
       <div id="dashboard-content"><div class="loader"><div class="spin"></div></div></div>
     </div>
 
-    <!-- Orders section -->
+    <!-- Поръчки -->
     <div class="section" id="sec-orders">
       <div id="orders-content"><div class="loader"><div class="spin"></div></div></div>
     </div>
 
-    <!-- Traffic section -->
+    <!-- Трафик -->
     <div class="section" id="sec-traffic">
       <div id="traffic-content"><div class="loader"><div class="spin"></div></div></div>
     </div>
@@ -292,18 +293,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
   <nav class="bottom-nav">
     <button class="nav-item active" data-tab="dashboard">
-      <span class="nav-icon">📊</span>Dashboard
+      <span class="nav-icon">📊</span>Табло
     </button>
     <button class="nav-item" data-tab="orders">
-      <span class="nav-icon">📦</span>Pedidos
+      <span class="nav-icon">📦</span>Поръчки
     </button>
     <button class="nav-item" data-tab="traffic">
-      <span class="nav-icon">📡</span>Tráfico
+      <span class="nav-icon">📡</span>Трафик
     </button>
   </nav>
 </div>
 
-<!-- Order detail sheet -->
+<!-- Детайли на поръчка -->
 <div id="sheet-overlay">
   <div id="sheet">
     <div class="sheet-handle"></div>
@@ -316,10 +317,9 @@ const API = 'https://je8fwbkk.eu-central.insforge.app/functions/admin-api'
 const SESSION_KEY = 'capnodis_admin_pwd'
 
 let cachedData = null
-let currentPeriod = 'week'
 let currentTab = 'dashboard'
 
-// ── Auth ──────────────────────────────────────────────────────────
+// ── Вход ──────────────────────────────────────────────────────────
 const loginScreen = document.getElementById('login')
 const appEl = document.getElementById('app')
 const pwdInput = document.getElementById('pwd-input')
@@ -332,6 +332,7 @@ function savePwd(p) { sessionStorage.setItem(SESSION_KEY, p) }
 async function tryLogin(pwd) {
   loginBtn.textContent = '...'
   loginBtn.disabled = true
+  loginErr.style.display = 'none'
   try {
     const res = await fetch(API + '?section=dashboard', {
       headers: { 'x-admin-password': pwd }
@@ -340,28 +341,36 @@ async function tryLogin(pwd) {
       savePwd(pwd)
       loginScreen.style.display = 'none'
       appEl.style.display = 'flex'
-      const json = await res.json()
-      cachedData = json
+      cachedData = await res.json()
       renderAll()
     } else {
       loginErr.style.display = 'block'
     }
   } catch (_) {
     loginErr.style.display = 'block'
-    loginErr.textContent = 'Error de conexión'
+    loginErr.textContent = 'Грешка при свързване'
   }
-  loginBtn.textContent = 'Entrar'
+  loginBtn.textContent = 'Влез'
   loginBtn.disabled = false
 }
 
 loginBtn.addEventListener('click', () => tryLogin(pwdInput.value.trim()))
 pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwdInput.value.trim()) })
 
-// Auto-login if session saved
 const saved = getSavedPwd()
 if (saved) tryLogin(saved)
 
-// ── Refresh ───────────────────────────────────────────────────────
+// ── Изход ─────────────────────────────────────────────────────────
+document.getElementById('logout-btn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_KEY)
+  appEl.style.display = 'none'
+  loginScreen.style.display = 'flex'
+  pwdInput.value = ''
+  loginErr.style.display = 'none'
+  cachedData = null
+})
+
+// ── Опресняване ───────────────────────────────────────────────────
 document.getElementById('refresh-btn').addEventListener('click', async () => {
   const btn = document.getElementById('refresh-btn')
   btn.style.transform = 'rotate(360deg)'
@@ -382,7 +391,7 @@ async function loadData() {
   } catch (_) {}
 }
 
-// ── Tab navigation ────────────────────────────────────────────────
+// ── Навигация ─────────────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     currentTab = btn.dataset.tab
@@ -394,7 +403,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   })
 })
 
-// ── Render all ───────────────────────────────────────────────────
+// ── Рендиране ─────────────────────────────────────────────────────
 function renderAll() {
   if (!cachedData) return
   renderDashboard()
@@ -402,77 +411,74 @@ function renderAll() {
   renderTraffic()
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────
+// ── Табло ─────────────────────────────────────────────────────────
 function renderDashboard() {
   const d = cachedData
   const s = d.stats
-  const periodData = s[currentPeriod] || s.week
-
   const orders = d.recent || []
   const dailyEntries = Object.entries(d.daily || {})
   const maxBar = Math.max(...dailyEntries.map(([,v]) => v), 1)
   const today = new Date().toISOString().slice(0, 10)
 
   const bars = dailyEntries.map(([day, count]) => {
-    const height = Math.round((count / maxBar) * 100)
+    const h = Math.round((count / maxBar) * 100)
     const isToday = day === today
     const cls = isToday ? 'today' : (count > 0 ? 'has-orders' : '')
-    return `<div class="chart-bar ${cls}" style="height:${Math.max(height,4)}%" title="${day}: ${count}"></div>`
+    return `<div class="chart-bar ${cls}" style="height:${Math.max(h,4)}%" title="${day}: ${count}"></div>`
   }).join('')
 
-  // Show only every 3rd label
   const labels = dailyEntries.map(([day], i) => {
-    const d = new Date(day)
-    const label = (i % 3 === 0) ? `${d.getDate()}/${d.getMonth()+1}` : ''
+    const dt = new Date(day)
+    const label = (i % 3 === 0) ? `${dt.getDate()}/${dt.getMonth()+1}` : ''
     return `<span>${label}</span>`
   }).join('')
 
   document.getElementById('dashboard-content').innerHTML = `
     <div class="hero">
-      <div class="hero-label">Ingresos totales</div>
+      <div class="hero-label">Общи приходи</div>
       <div class="hero-value"><span>€</span>${s.totalRevenue.toFixed(2)}</div>
-      <div class="hero-sub"><b>${s.totalOrders}</b> pedidos · <b>${s.totalVisits}</b> visitas · Conv. <b>${s.convRate}%</b></div>
+      <div class="hero-sub"><b>${s.totalOrders}</b> поръчки · <b>${s.totalVisits}</b> посещения · Конв. <b>${s.convRate}%</b></div>
     </div>
 
     <div class="stat-row">
       <div class="stat-card">
-        <div class="stat-card-label">Hoy</div>
+        <div class="stat-card-label">Днес</div>
         <div class="stat-card-value gold">€${s.today.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.today.orders} ped.</div>
+        <div class="stat-card-sub">${s.today.orders} поръч.</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">Semana</div>
+        <div class="stat-card-label">Седмица</div>
         <div class="stat-card-value gold">€${s.week.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.week.orders} ped.</div>
+        <div class="stat-card-sub">${s.week.orders} поръч.</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">Mes</div>
+        <div class="stat-card-label">Месец</div>
         <div class="stat-card-value cyan">€${s.month.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.month.orders} ped.</div>
+        <div class="stat-card-sub">${s.month.orders} поръч.</div>
       </div>
     </div>
 
-    <div class="section-label">Pedidos — últimos 14 días</div>
+    <div class="section-label">Поръчки — последни 14 дни</div>
     <div class="chart-wrap">
       <div class="chart">${bars}</div>
     </div>
     <div class="chart-labels">${labels}</div>
 
-    <div class="section-label">Últimos pedidos</div>
+    <div class="section-label">Последни поръчки</div>
     <div class="orders-list">
-      ${orders.slice(0, 5).map(o => orderCard(o)).join('') || '<div class="empty"><div class="empty-icon">📦</div>Sin pedidos</div>'}
+      ${orders.slice(0, 5).map(o => orderCard(o)).join('') || emptyState('📦', 'Няма поръчки')}
     </div>
   `
   bindOrderCards()
 }
 
-// ── Orders ────────────────────────────────────────────────────────
+// ── Поръчки ───────────────────────────────────────────────────────
 function renderOrders() {
   const orders = cachedData?.recent || []
   document.getElementById('orders-content').innerHTML = `
-    <div class="section-label">Todos los pedidos (${orders.length})</div>
+    <div class="section-label">Всички поръчки (${orders.length})</div>
     <div class="orders-list">
-      ${orders.map(o => orderCard(o)).join('') || '<div class="empty"><div class="empty-icon">📦</div>Sin pedidos</div>'}
+      ${orders.map(o => orderCard(o)).join('') || emptyState('📦', 'Няма поръчки')}
     </div>
   `
   bindOrderCards()
@@ -483,7 +489,7 @@ function orderCard(o) {
   const isReal = o.amount >= 1
   const badge = isReal
     ? `<span class="order-badge badge-paid">€${Number(o.amount).toFixed(2)}</span>`
-    : `<span class="order-badge badge-free">Gratis</span>`
+    : `<span class="order-badge badge-free">Безплатно</span>`
   return `
     <div class="order-card" data-id="${o.id}" data-order='${JSON.stringify(o).replace(/'/g,"&#39;")}'>
       <div class="order-card-top">
@@ -507,7 +513,7 @@ function bindOrderCards() {
   })
 }
 
-// ── Traffic ───────────────────────────────────────────────────────
+// ── Трафик ────────────────────────────────────────────────────────
 function renderTraffic() {
   const s = cachedData?.stats || {}
   const sources = cachedData?.sources || []
@@ -516,15 +522,15 @@ function renderTraffic() {
     <div class="visits-hero">
       <div>
         <div class="visits-big">${s.totalVisits || 0}</div>
-        <div class="visits-label">Visitas (30 días)</div>
+        <div class="visits-label">Посещения (30 дни)</div>
       </div>
       <div class="conv-wrap">
         <div class="conv-big">${s.convRate || 0}%</div>
-        <div class="conv-label">Conversión</div>
+        <div class="conv-label">Конверсия</div>
       </div>
     </div>
 
-    <div class="section-label">Fuentes de tráfico</div>
+    <div class="section-label">Трафик източници</div>
     <div class="utm-list">
       ${sources.length ? sources.map(src => `
         <div class="utm-row">
@@ -535,9 +541,9 @@ function renderTraffic() {
           <div class="utm-bar-wrap">
             <div class="utm-bar" style="width:${src.pct}%"></div>
           </div>
-          <div class="utm-pct">${src.pct}% del total</div>
+          <div class="utm-pct">${src.pct}% от общото</div>
         </div>`).join('')
-      : '<div class="empty"><div class="empty-icon">📡</div><div>Sin datos de tráfico aún</div><div style="font-size:13px;margin-top:8px">Las visitas aparecerán aquí</div></div>'}
+      : emptyState('📡', 'Все още няма данни за трафика', 'Посещенията ще се появят тук')}
     </div>
   `
 }
@@ -547,30 +553,30 @@ function sourceLabel(src) {
     facebook: '📘 Facebook',
     instagram: '📸 Instagram',
     google: '🔍 Google',
-    direct: '🔗 Directo',
-    organic: '🌱 Orgánico',
-    email: '📧 Email',
-    twitter: '🐦 Twitter',
+    direct: '🔗 Директен',
+    organic: '🌱 Органичен',
+    email: '📧 Имейл',
+    twitter: '🐦 Twitter / X',
     tiktok: '🎵 TikTok',
   }
   return map[src?.toLowerCase()] || `🌐 ${src}`
 }
 
-// ── Order sheet ───────────────────────────────────────────────────
+// ── Детайли на поръчка ───────────────────────────────────────────
 function openSheet(order) {
   const rows = [
-    ['Email', order.customer_email || '—'],
-    ['Nombre', order.customer_name || '—'],
-    ['Teléfono', order.customer_phone || '—'],
-    ['País', order.billing_country || '—'],
-    ['Importe', order.amount >= 1 ? `€${Number(order.amount).toFixed(2)}` : 'Gratis (cupón)'],
-    ['Estado', order.stripe_payment_status || '—'],
-    ['Fecha', order.created_at ? new Date(order.created_at).toLocaleString('es-ES') : '—'],
-    ['Sesión Stripe', order.stripe_session_id || '—'],
+    ['Имейл', order.customer_email || '—'],
+    ['Име', order.customer_name || '—'],
+    ['Телефон', order.customer_phone || '—'],
+    ['Държава', order.billing_country || '—'],
+    ['Сума', order.amount >= 1 ? `€${Number(order.amount).toFixed(2)}` : 'Безплатно (купон)'],
+    ['Статус', order.stripe_payment_status || '—'],
+    ['Дата', order.created_at ? new Date(order.created_at).toLocaleString('bg-BG') : '—'],
+    ['Stripe сесия', order.stripe_session_id || '—'],
     ['ID', order.id || '—'],
   ]
   document.getElementById('sheet-content').innerHTML = `
-    <div class="sheet-title">Detalle del pedido</div>
+    <div class="sheet-title">Детайли на поръчката</div>
     ${rows.map(([k, v]) => `<div class="sheet-row"><span class="sheet-key">${k}</span><span class="sheet-val">${v}</span></div>`).join('')}
   `
   const overlay = document.getElementById('sheet-overlay')
@@ -593,20 +599,24 @@ function closeSheet() {
   setTimeout(() => { overlay.style.display = 'none' }, 280)
 }
 
-// ── Helpers ───────────────────────────────────────────────────────
+// ── Помощни функции ──────────────────────────────────────────────
 function timeAgo(iso) {
   if (!iso) return '—'
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
   const h = Math.floor(m / 60)
   const d = Math.floor(h / 24)
-  if (d > 0) return `hace ${d}d`
-  if (h > 0) return `hace ${h}h`
-  if (m > 0) return `hace ${m}m`
-  return 'ahora'
+  if (d > 0) return `преди ${d}д`
+  if (h > 0) return `преди ${h}ч`
+  if (m > 0) return `преди ${m}мин`
+  return 'сега'
 }
 
-// ── Pull-to-refresh (simple) ──────────────────────────────────────
+function emptyState(icon, title, sub = '') {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><div>${title}</div>${sub ? `<div style="font-size:13px;margin-top:8px">${sub}</div>` : ''}</div>`
+}
+
+// ── Pull-to-refresh ───────────────────────────────────────────────
 let startY = 0
 const content = document.getElementById('content')
 content.addEventListener('touchstart', e => { startY = e.touches[0].clientY }, { passive: true })
