@@ -154,7 +154,7 @@ async function verifyAndParse(payload: string, signature: string, secret: string
   if (!ts || !v1) throw new Error('Malformed signature')
 
   // Strip 'whsec_' prefix — Stripe signs with the raw bytes after the prefix
-  const secretKey = secret.startsWith('whsec_') ? secret.slice(7) : secret
+  const secretKey = secret.startsWith('whsec_') ? secret.slice(6) : secret
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secretKey),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
