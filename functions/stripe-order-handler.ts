@@ -46,6 +46,15 @@ async function processOrder(session: any) {
   const phone = session.customer_details?.phone ?? ''
   const country = session.customer_details?.address?.country ?? ''
 
+  // Idempotency: skip if order already exists for this session
+  const { data: existing } = await admin.database
+    .from('orders')
+    .select('id')
+    .eq('stripe_session_id', session.id)
+    .maybeSingle()
+
+  if (existing) return
+
   const { data: order, error: orderErr } = await admin.database
     .from('orders')
     .insert([{
