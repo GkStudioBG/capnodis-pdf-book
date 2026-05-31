@@ -60,6 +60,9 @@ const FILES = [
   { key: 'bono3-decision.pdf',    label: 'Bono 3: Árbol de decisión',       icon: '🌿' },
 ]
 
+const PRICE_FALLBACK = 19.90
+let purchaseFired = false
+
 async function init() {
   const params = new URLSearchParams(location.search)
   const sessionId = params.get('session_id')
@@ -69,22 +72,26 @@ async function init() {
     return
   }
 
-  // Fire Purchase immediately — independent of download token fetch
-  trackMetaPurchase(sessionId)
-
-  // Stripe webhook puede tardar unos segundos — reintentamos 5 veces
+  // Stripe webhook puede tardar unos segundos — reintentamos 5 veces.
+  // session-to-token devuelve { token, amount } cuando el pedido existe.
   let token = null
+  let amount = null
   for (let i = 0; i < 5; i++) {
     try {
       const res = await fetch(`${TOKEN_API}?session_id=${encodeURIComponent(sessionId)}`)
       if (res.ok) {
         const json = await res.json()
         token = json.token
+        amount = (json.amount !== undefined && json.amount !== null) ? json.amount : null
         break
       }
     } catch (_) {}
     await new Promise(r => setTimeout(r, 2500))
   }
+
+  // Fire Purchase with the REAL order amount when we have it; otherwise fall
+  // back to the catalog price so the event is never lost.
+  trackMetaPurchase(sessionId, amount != null ? amount : PRICE_FALLBACK)
 
   if (token) {
     showDownloads(token)
@@ -93,10 +100,10 @@ async function init() {
   }
 }
 
-function trackMetaPurchase(sessionId) {
-  if (!sessionId) return
+function trackMetaPurchase(sessionId, value) {
+  if (!sessionId || purchaseFired) return
   const key = 'meta_purchase_tracked_' + sessionId
-  if (localStorage.getItem(key)) return
+  if (localStorage.getItem(key)) { purchaseFired = true; return }
 
   const send = () => {
     if (typeof window.fbq !== 'function') return false
@@ -106,11 +113,12 @@ function trackMetaPurchase(sessionId) {
       content_type: 'product',
       content_ids: ['capnodis_pdf_guide'],
       num_items: 1,
-      value: 19.90,
+      value: Number(value) || PRICE_FALLBACK,
       currency: 'EUR',
       order_id: sessionId
     })
     localStorage.setItem(key, 'true')
+    purchaseFired = true
     return true
   }
 

@@ -11,7 +11,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const { data, error } = await admin.database
     .from('orders')
-    .select('download_tokens(token, expires_at)')
+    .select('amount, download_tokens(token, expires_at)')
     .eq('stripe_session_id', sessionId)
     .eq('stripe_payment_status', 'paid')
     .single()
@@ -26,5 +26,7 @@ export default async function handler(req: Request): Promise<Response> {
     return Response.json({ error: 'expired' }, { status: 410 })
   }
 
-  return Response.json({ token: token.token })
+  // Return the real order amount so the thank-you page reports the true
+  // Purchase value to Meta (instead of a hard-coded price).
+  return Response.json({ token: token.token, amount: (data as any).amount ?? null })
 }
