@@ -2,6 +2,12 @@ import { createAdminClient } from 'https://esm.sh/@insforge/sdk@latest'
 
 const STRIPE_API = 'https://api.stripe.com/v1'
 
+// Capnodis sells through ONE Stripe Payment Link, but the Stripe account is
+// SHARED (invoices + other products fire this same webhook). Only accept
+// sessions that originated from the capnodis payment link; reject everything
+// else so foreign payments never become capnodis orders / download emails.
+const CAPNODIS_PAYMENT_LINKS = ['plink_1TclzCFFeNuMzqHFDiHv42sM']
+
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
@@ -42,6 +48,12 @@ export default async function handler(req: Request): Promise<Response> {
   }
   if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
     return Response.json({ received: true, ignored: `payment_status=${session.payment_status}` })
+  }
+
+  // Shared-account guard: ignore sessions from any other payment link / product
+  // (invoices, other Infinity Creative products) so they never pollute capnodis.
+  if (!CAPNODIS_PAYMENT_LINKS.includes(session.payment_link)) {
+    return Response.json({ received: true, ignored: `foreign payment_link=${session.payment_link}` })
   }
 
   try {

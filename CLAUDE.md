@@ -74,10 +74,29 @@ Instead, on `checkout.session.completed` the function **re-fetches the session d
 fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`,
       { headers: { Authorization: `Bearer ${STRIPE_LIVE_SECRET_KEY}` } })
 → require livemode === true && payment_status in ('paid','no_payment_required')
+→ require session.payment_link ∈ CAPNODIS_PAYMENT_LINKS   ← shared-account guard (see below)
 → processOrder(session)
 ```
 
 Why this is safe: an attacker would need a real, paid `cs_live_…` session id (not public/guessable); replays are idempotent (order skipped if `stripe_session_id` exists) and the download link only ever emails the genuine customer.
+
+### ⛔ Shared-account guard - why we filter `payment_link` (fix 2026-06-08)
+
+Stripe delivers `checkout.session.completed` to **every** endpoint on the account, regardless of which project's link was paid. So this webhook receives events for ALL 20+ payment links on the shared **Infinity Creative LTD** account (invoices, other products), not just ours. Re-fetching the session and checking `livemode`/`paid` is **not enough** - a real paid invoice passes all three checks.
+
+**What happened:** a 48,00 € invoice payment ("Фактура № 1000000080", BG customer, via `plink_1TeZaN…`) became a fake capnodis order AND triggered a Spanish-PDF Resend email to that unrelated customer.
+
+**The guard:** the handler now ignores any session whose `payment_link` is not ours:
+
+```ts
+const CAPNODIS_PAYMENT_LINKS = ['plink_1TclzCFFeNuMzqHFDiHv42sM']
+if (!CAPNODIS_PAYMENT_LINKS.includes(session.payment_link)) {
+  return Response.json({ received: true, ignored: `foreign payment_link=${session.payment_link}` })
+}
+```
+
+- Genuine capnodis checkouts (incl. 100%-off promo codes) always carry `payment_link = plink_1TclzC…` → still processed, no regression.
+- If a NEW capnodis payment link is ever created, append its `plink_…` id to `CAPNODIS_PAYMENT_LINKS` or deliveries silently stop.
 
 **Consequence:** the webhook signing secret no longer matters. The Stripe endpoint just has to POINT at `.../functions/stripe-order-handler` and send `checkout.session.completed`. `STRIPE_WEBHOOK_SECRET` / `STRIPE_LIVE_WEBHOOK_SECRET` are now unused by this function and can be ignored.
 
