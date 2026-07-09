@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gracias por tu compra — Capnodis</title>
-<!-- Meta Pixel Code -->
+<!-- Google tag (gtag.js) - Google Ads AW-18066535730 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066535730"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-18066535730');
+  </script>
+  <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -92,6 +100,7 @@ async function init() {
   // Fire Purchase with the REAL order amount when we have it; otherwise fall
   // back to the catalog price so the event is never lost.
   trackMetaPurchase(sessionId, amount != null ? amount : PRICE_FALLBACK)
+  trackGooglePurchase(sessionId, amount != null ? amount : PRICE_FALLBACK)
 
   if (token) {
     showDownloads(token)
@@ -119,6 +128,28 @@ function trackMetaPurchase(sessionId, value) {
     })
     localStorage.setItem(key, 'true')
     purchaseFired = true
+    return true
+  }
+
+  if (!send()) {
+    setTimeout(send, 700)
+  }
+}
+
+function trackGooglePurchase(sessionId, value) {
+  if (!sessionId) return
+  const key = 'google_purchase_tracked_' + sessionId
+  if (localStorage.getItem(key)) return
+
+  const send = () => {
+    if (typeof window.gtag !== 'function') return false
+    window.gtag('event', 'conversion', {
+      send_to: 'AW-18066535730/rfpBCLTmxJYcELLq5aZD',
+      value: Number(value) || PRICE_FALLBACK,
+      currency: 'EUR',
+      transaction_id: sessionId
+    })
+    localStorage.setItem(key, 'true')
     return true
   }
 
