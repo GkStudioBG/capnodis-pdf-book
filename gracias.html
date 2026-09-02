@@ -109,6 +109,7 @@ async function init() {
   // back to the catalog price so the event is never lost.
   trackMetaPurchase(sessionId, amount != null ? amount : PRICE_FALLBACK)
   trackGooglePurchase(sessionId, amount != null ? amount : PRICE_FALLBACK)
+  trackOpenAIOrderCreated(sessionId)
 
   if (token) {
     showDownloads(token)
@@ -164,6 +165,20 @@ function trackGooglePurchase(sessionId, value) {
   if (!send()) {
     setTimeout(send, 700)
   }
+}
+
+function trackOpenAIOrderCreated(sessionId) {
+  if (!sessionId) return
+  const key = 'openai_order_created_tracked_' + sessionId
+  if (localStorage.getItem(key)) return
+  if (typeof window.oaiq !== 'function') return
+
+  oaiq(
+    "measure",
+    "order_created",
+    { type: "contents" }
+  );
+  localStorage.setItem(key, 'true')
 }
 
 function showDownloads(token) {
