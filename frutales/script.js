@@ -1,7 +1,6 @@
 (() => {
-  // TODO before launch: replace with the real Stripe Payment Link for THIS
-  // product. Never reuse capnodis-pdf-book's link. See CLAUDE.md.
-  const checkoutUrl = 'REPLACE_WITH_REAL_CHECKOUT_URL';
+  // Dedicated Payment Link for frutales only; the almond product is unchanged.
+  const checkoutUrl = 'https://buy.stripe.com/bJe4gz6TL0Mnarj9HO6AM17';
   const stickyBuy = document.querySelector('[data-sticky-buy]');
   const checkoutLinks = document.querySelectorAll('[data-checkout]');
   const trackedLinks = document.querySelectorAll('[data-track]');
@@ -227,7 +226,8 @@
     check();
   }
 
-  persistUtms();
+  // Browsers that block storage must still be able to open checkout.
+  try { persistUtms(); } catch (_) {}
   setupReveal();
   setupCheckoutLinks();
   setupTracking();
