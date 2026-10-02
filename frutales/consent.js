@@ -1,12 +1,12 @@
-/* ── Capnodis Frutales de Hueso — Consent Mode v2 + Compact Banner ──
+/* ── Capnodis Frutales de Hueso - Consent Mode v2 + Compact Banner ──
  * GDPR / LSSI compliant consent flow for Spain traffic.
  * - Default state: denied (analytics_storage, ad_storage, ad_user_data, ad_personalization)
  * - Compact bottom-bar UI on first visit
- * - Spanish copy, Inter font (matches brand — fixes the almond book's
+ * - Spanish copy, Inter font (matches brand - fixes the almond book's
  *   Arial-in-the-banner inconsistency noted in doc 08 §2)
  * - Choice persisted in localStorage (12 months, GDPR max)
  * - Updates gtag consent before any tag fires (once this project has
- *   its own Google Ads/GA4 container wired up — safe no-op until then)
+ *   its own Google Ads/GA4 container wired up - safe no-op until then)
  * ─────────────────────────────────────────────────────────────── */
 (() => {
   const STORAGE_KEY = 'capnodis_frutales_consent_v1';
