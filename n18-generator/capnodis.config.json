@@ -1,0 +1,18 @@
+{
+  "header": {
+    "eik": "208149507",
+    "e_shop_n": "RF0007778",
+    "domain_name": "capnodis.com",
+    "e_shop_type": "1"
+  },
+  "approvals": {
+    "reporting_currency": "EUR",
+    "currency_policy_reference": "EUR - официална валута в България от 01.01.2026; всички продажби са в EUR",
+    "tax_policy_reference": "ДДС 20%, данъчна група Б; крайна цена 19,90 EUR с ДДС - решение на управителя от 06.10.2026",
+    "document_numbering_reference": "Таблица n18_counter: 10-разряден номер, нараства със стъпка 1, общ за целия магазин",
+    "scope_reference": "capnodis.com - продукти Almendro и Frutales; документи от таблица n18_documents",
+    "refund_review_reference": "Таблица n18_refunds - всяко връщане се въвежда при извършването му"
+  },
+  "proc_id": "acct_1UNXo2FQ0Sq9LOrr",
+  "paym": "4"
+}

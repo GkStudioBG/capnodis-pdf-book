@@ -102,6 +102,12 @@ if (!CAPNODIS_PAYMENT_LINKS.includes(session.payment_link)) {
 
 The only secret this function needs is **`STRIPE_LIVE_SECRET_KEY`** (a valid `sk_live_…` key) plus the InsForge/Resend keys (`API_KEY`, `INSFORGE_BASE_URL`, `RESEND_API_KEY`).
 
+### Own Stripe account + Наредба Н-18 (prepared 2026-10-06, not yet live)
+
+Capnodis now has its own Stripe account **`acct_1UNXo2FQ0Sq9LOrr`** (organization "Infinity Creative", next to the MenuList account `acct_1QoAmvFFeNuMzqHF`). Until the switch, all sales still run through the old account. The second product, Frutales de Hueso (`capnodis.com/frutales/`), is delivered by the InsForge function `frutales-delivery` (source pulled into `functions/frutales-delivery.ts`; it is not built from this repo's HTML).
+
+Both delivery functions issue a sale document under Art. 52o of Наредба Н-18 (`n18_issue_document` RPC → table `n18_documents`, page `functions/n18-document.ts`) **only when the secret `N18_SHOP_NUMBER` is set**. Bulgarian VAT 20%, tax group Б, price 19,90 € VAT-inclusive. Monthly audit XML: `python n18-generator/export_month.py YYYY-MM`. Switch steps: `N18-SWITCH-RUNBOOK.md`.
+
 ### InsForge edge functions (`functions/`)
 
 - `stripe-order-handler` — Stripe webhook; creates order + token + sends Resend email.

@@ -1,6 +1,6 @@
 (() => {
   // Dedicated Payment Link for frutales only; the almond product is unchanged.
-  const checkoutUrl = 'https://buy.stripe.com/bJe4gz6TL0Mnarj9HO6AM17';
+  const checkoutUrl = 'https://buy.stripe.com/6oU7sLbcb7Xqbq89t7d7q01';
   const stickyBuy = document.querySelector('[data-sticky-buy]');
   const checkoutLinks = document.querySelectorAll('[data-checkout]');
   const trackedLinks = document.querySelectorAll('[data-track]');
