@@ -1,7 +1,8 @@
 import { createAdminClient } from 'https://esm.sh/@insforge/sdk@latest'
 
 // Admin панел за capnodis.com: статистика по продукти + месечен XML по Наредба Н-18.
-// Достъп: заглавки x-admin-user / x-admin-password срещу секретите ADMIN_USERNAME / ADMIN_PASSWORD.
+// Достъп: заглавки x-admin-user / x-admin-password срещу секретите ADMIN_USERNAME / ADMIN_PANEL_PASSWORD
+// (ADMIN_PASSWORD е reserved в InsForge и не може да се променя).
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -41,7 +42,7 @@ async function sameText(a: string, b: string): Promise<boolean> {
 
 async function authorized(req: Request): Promise<boolean> {
   const expectedUser = Deno.env.get('ADMIN_USERNAME') ?? ''
-  const expectedPass = Deno.env.get('ADMIN_PASSWORD') ?? ''
+  const expectedPass = Deno.env.get('ADMIN_PANEL_PASSWORD') ?? ''
   if (!expectedUser || !expectedPass) return false
   const user = req.headers.get('x-admin-user') ?? ''
   const pass = req.headers.get('x-admin-password') ?? ''
