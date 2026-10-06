@@ -122,6 +122,20 @@ h2{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
 .note{font-size:12px;color:var(--text3);margin-top:10px}
 a.doclink{color:var(--gold);text-decoration:none;font-size:12px}
 
+/* OSS threshold */
+.oss-top{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.oss-top b{font-size:24px}
+.meter{height:10px;background:var(--bg2);border-radius:5px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--green);border-radius:5px;transition:width .4s}
+.meter.warn i{background:var(--gold)}
+.meter.over i{background:var(--red)}
+.oss-foot{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-top:8px;flex-wrap:wrap}
+
+/* Refund form */
+.refund-form select,.refund-form input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 12px;font-size:16px;outline:none;color-scheme:dark}
+.refund-form select:focus,.refund-form input:focus{border-color:var(--gold)}
+.refund-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
 /* Funnel / sources */
 .funnel{display:grid;gap:8px}
 .fbar{display:grid;grid-template-columns:110px 1fr 70px;align-items:center;gap:10px;font-size:13px}
@@ -191,6 +205,13 @@ nav.tabs button.on{color:var(--gold)}
         <div class="kpi"><div class="label">Almendro</div><div class="value num" id="k-alm">—</div><div class="hint" id="k-alm-h"></div></div>
         <div class="kpi"><div class="label">Frutales</div><div class="value num" id="k-fru">—</div><div class="hint" id="k-fru-h"></div></div>
       </div>
+      <div class="card" id="oss-card">
+        <h3>Праг за продажби в ЕС · 10 000 €</h3>
+        <div class="oss-top"><b class="num" id="oss-total">—</b><span class="muted small" id="oss-year"></span></div>
+        <div class="meter"><i id="oss-bar"></i></div>
+        <div class="oss-foot"><span id="oss-left">—</span><span class="muted" id="oss-prev"></span></div>
+        <p class="note" id="oss-note"></p>
+      </div>
       <div class="card">
         <div class="chart-head">
           <h3 style="margin:0">Последните 30 дни</h3>
@@ -228,6 +249,27 @@ nav.tabs button.on{color:var(--gold)}
           </button>
         </div>
         <p class="note">Файлът за месеца се подава в НАП до 15-о число на следващия месец. Генерира се от издадените документи по чл. 52о.</p>
+      </div>
+      <div class="card">
+        <h3>Връщане на сума</h3>
+        <form id="refund-form" class="refund-form">
+          <label class="field"><span>Документ</span><select id="r-doc" required></select></label>
+          <div class="refund-row">
+            <label class="field"><span>Сума (€)</span><input id="r-amount" type="number" inputmode="decimal" step="0.01" min="0.01" required></label>
+            <label class="field"><span>Дата</span><input id="r-date" type="date" required></label>
+          </div>
+          <label class="field"><span>Начин</span>
+            <select id="r-method">
+              <option value="2">По карта (Stripe)</option>
+              <option value="1">По платежна сметка</option>
+              <option value="3">В брой</option>
+              <option value="4">Друг</option>
+            </select>
+          </label>
+          <button class="btn btn-primary" id="r-submit" type="submit">Запиши връщането</button>
+        </form>
+        <p class="note">Записвай тук всяко връщане, направено в Stripe. Влиза в раздела „върнати поръчки“ на XML-а за месеца на връщането. Записът не може да се изтрие от панела.</p>
+        <div class="list" id="refunds" style="margin-top:8px"></div>
       </div>
       <div class="card">
         <h3>Последни документи</h3>
@@ -332,7 +374,67 @@ nav.tabs button.on{color:var(--gold)}
   // ── Render ──
   function render() {
     if (!data) return
-    renderOverview(); renderChart(); renderProducts(); renderRecent(); renderN18(); renderTraffic()
+    renderOverview(); renderOss(); renderChart(); renderProducts(); renderRecent(); renderN18(); renderRefunds(); renderTraffic()
+  }
+
+  function renderOss() {
+    const o = data.threshold, c = o.current, p = o.previous
+    const worst = Math.max(c.percent, p.percent)
+    $('oss-total').textContent = eur(c.total)
+    $('oss-year').textContent = `от ${eur(o.limit)} за ${c.year} г. · ${c.percent.toFixed(1)}%`
+    $('oss-bar').style.width = Math.min(100, c.percent) + '%'
+    $('oss-bar').parentElement.className = 'meter' + (worst >= 100 ? ' over' : worst >= 80 ? ' warn' : '')
+    $('oss-left').innerHTML = c.remaining > 0 ? `Остават <b class="num">${eur(c.remaining)}</b>` : '<b style="color:var(--red)">Прагът е достигнат</b>'
+    $('oss-prev').textContent = `${p.year} г.: ${eur(p.total)}`
+    const notes = []
+    if (worst >= 100) notes.push('Прагът е надхвърлен: от следващата продажба се дължи ДДС на държавата на клиента (OSS). Свържи се със счетоводителя веднага.')
+    else if (worst >= 80) notes.push('Над 80% от прага: подготви OSS регистрация със счетоводителя.')
+    notes.push(`Продажби на Capnodis извън България, с ДДС, минус върнатите суми. ${c.unknownCountry ? c.unknownCountry + ' поръчки без държава са броени като чуждестранни. ' : ''}Прагът е общ за цялата фирма: продажбите на други бизнеси не са включени.`)
+    $('oss-note').textContent = notes.join(' ')
+  }
+
+  const REFUND_METHODS = { 1: 'по сметка', 2: 'по карта', 3: 'в брой', 4: 'друг' }
+
+  function renderRefunds() {
+    const n = data.n18, sel = $('r-doc'), prev = sel.value
+    sel.innerHTML = n.refundable.length
+      ? '<option value="">— избери —</option>' + n.refundable.map((d) =>
+          `<option value="${esc(d.number)}" data-max="${(d.total - d.refunded).toFixed(2)}">№ ${esc(d.number)} · ${PRODUCTS[d.product].label} · ${eur(d.total)}${d.refunded ? ' (върнати ' + eur(d.refunded) + ')' : ''} · ${time(d.issuedAt)}</option>`).join('')
+      : '<option value="">Няма документи за връщане</option>'
+    if (prev) sel.value = prev
+    $('r-submit').disabled = !n.refundable.length
+    if (!$('r-date').value) $('r-date').value = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Sofia' })
+    $('r-date').max = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Sofia' })
+    $('refunds').innerHTML = n.refunds.length ? n.refunds.map((r) =>
+      `<div class="row"><div class="main"><b class="num">№ ${esc(r.number)}</b><span>${esc(r.date)} · ${REFUND_METHODS[r.method] || ''}</span></div><div class="amt num" style="color:var(--red)">−${eur(r.amount)}</div></div>`).join('')
+      : ''
+  }
+
+  async function submitRefund(e) {
+    e.preventDefault()
+    const auth = loadAuth(), opt = $('r-doc').selectedOptions[0]
+    if (!auth || !opt || !opt.value) return toast('Избери документ')
+    const amount = Number($('r-amount').value)
+    if (!confirm(`Записваш връщане на ${eur(amount)} по документ № ${opt.value}. Записът е окончателен. Продължаваш ли?`)) return
+    const btn = $('r-submit')
+    btn.disabled = true
+    try {
+      const res = await fetch(API + '?section=n18_refund', {
+        method: 'POST',
+        headers: { ...headers(auth), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docNumber: opt.value, amount, date: $('r-date').value, method: Number($('r-method').value) }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) return toast(body.error || 'Неуспешно записване')
+      toast('Връщането е записано')
+      $('r-amount').value = ''
+      $('r-doc').value = ''
+      refresh()
+    } catch {
+      toast('Няма връзка със сървъра')
+    } finally {
+      btn.disabled = false
+    }
   }
 
   function renderOverview() {
@@ -511,6 +613,11 @@ nav.tabs button.on{color:var(--gold)}
   $('btn-refresh').addEventListener('click', () => refresh(true))
   $('btn-logout').addEventListener('click', () => { clearAuth(); data = null; showLogin() })
   $('btn-xml').addEventListener('click', downloadXml)
+  $('refund-form').addEventListener('submit', submitRefund)
+  $('r-doc').addEventListener('change', () => {
+    const max = $('r-doc').selectedOptions[0]?.dataset.max
+    if (max) { $('r-amount').value = max; $('r-amount').max = max }
+  })
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab) })
   $('period').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return

@@ -6,7 +6,7 @@ import { createAdminClient } from 'https://esm.sh/@insforge/sdk@latest'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, x-admin-user, x-admin-password',
   'Access-Control-Expose-Headers': 'Content-Disposition',
   'Cache-Control': 'no-store',
@@ -70,6 +70,7 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     if (section === 'dashboard') return json(await dashboard(admin))
     if (section === 'n18_xml') return await n18Xml(admin, url.searchParams.get('month') ?? '')
+    if (section === 'n18_refund' && req.method === 'POST') return await n18Refund(admin, await req.json().catch(() => ({})))
   } catch (err) {
     console.error('admin-api failed', section, err instanceof Error ? err.message : err)
     return json({ error: 'Server error' }, 500)
@@ -95,7 +96,7 @@ async function dashboard(admin: any) {
   const now = new Date()
   const since30 = new Date(now.getTime() - 30 * 86400000).toISOString()
 
-  const [almRes, fruRes, visitsRes, eventsRes, docsRes] = await Promise.all([
+  const [almRes, fruRes, visitsRes, eventsRes, docsRes, refundsRes] = await Promise.all([
     admin.database.from('orders')
       .select('amount, created_at, customer_email, customer_name, billing_country, utm_source, utm_content, visitor_id'),
     admin.database.from('frutales_orders')
@@ -103,8 +104,11 @@ async function dashboard(admin: any) {
     admin.database.from('visits').select('page, utm_source, created_at, visitor_id, is_bot').gte('created_at', since30),
     admin.database.from('events').select('event_name, page, visitor_id, is_bot').gte('created_at', since30),
     admin.database.from('n18_documents')
-      .select('doc_number_text, issued_at, source, total_gross, vat_amount, view_token')
+      .select('doc_number_text, order_number, issued_at, source, total_gross, vat_amount, view_token')
       .order('doc_number', { ascending: false }),
+    admin.database.from('n18_refunds')
+      .select('order_number, amount, refunded_on, refund_method, created_at')
+      .order('created_at', { ascending: false }),
   ])
 
   const sales: Sale[] = [
@@ -210,6 +214,10 @@ async function dashboard(admin: any) {
 
   // Наредба Н-18
   const docs = docsRes.data ?? []
+  const refunds = refundsRes.data ?? []
+  const refundedByOrder: Record<string, number> = {}
+  refunds.forEach((r: any) => { refundedByOrder[r.order_number] = round2((refundedByOrder[r.order_number] ?? 0) + Number(r.amount)) })
+  const docByOrder = new Map<string, any>(docs.map((d: any) => [d.order_number, d]))
   const thisMonth = todayKey.slice(0, 7)
   const docMonths = [...new Set(docs.map((d: any) => sofiaDay(d.issued_at).slice(0, 7)))].sort().reverse()
   const monthDocs = docs.filter((d: any) => sofiaDay(d.issued_at).startsWith(thisMonth))
@@ -233,13 +241,81 @@ async function dashboard(admin: any) {
       },
       recent: docs.slice(0, 10).map((d: any) => ({
         number: d.doc_number_text, issuedAt: d.issued_at, product: d.source, total: Number(d.total_gross), token: d.view_token,
+        refunded: refundedByOrder[d.order_number] ?? 0,
+      })),
+      refundable: docs.slice(0, 100)
+        .map((d: any) => ({ number: d.doc_number_text, issuedAt: d.issued_at, product: d.source, total: Number(d.total_gross), refunded: refundedByOrder[d.order_number] ?? 0 }))
+        .filter((d: any) => d.refunded < d.total),
+      refunds: refunds.slice(0, 20).map((r: any) => ({
+        number: docByOrder.get(r.order_number)?.doc_number_text ?? '—', amount: Number(r.amount),
+        date: r.refunded_on, method: Number(r.refund_method),
       })),
     },
+    threshold: oss(sales, refunds, todayKey),
     recent: sales.slice(0, 40).map((s) => ({
       product: s.product, amount: s.amount, createdAt: s.created_at,
       email: s.email, name: s.name, country: s.country, source: s.utm_source,
     })),
   }
+}
+
+// ─────────────── Праг 10 000 € за дистанционни продажби в ЕС (OSS) ───────────────
+// Сумира продажбите на Capnodis към клиенти извън България за текущата и
+// предходната календарна година. Консервативно: сумите са с ДДС, а поръчките без
+// държава (Frutales не събира адрес) се броят като чуждестранни. Прагът е общ за
+// цялата фирма — продажбите на други бизнеси на дружеството не са включени.
+const OSS_THRESHOLD = 10000
+
+function oss(sales: Sale[], refunds: any[], todayKey: string) {
+  const year = Number(todayKey.slice(0, 4))
+  const refundTotal = (y: number) => refunds
+    .filter((r: any) => String(r.refunded_on).startsWith(String(y)))
+    .reduce((s: number, r: any) => s + Number(r.amount), 0)
+  const forYear = (y: number) => {
+    const list = sales.filter((s) => s.amount > 0 && sofiaDay(s.created_at).startsWith(String(y)) && s.country !== 'BG')
+    const total = round2(Math.max(0, list.reduce((s, x) => s + x.amount, 0) - refundTotal(y)))
+    return {
+      year: y,
+      total,
+      sales: list.length,
+      unknownCountry: list.filter((s) => !s.country).length,
+      percent: round2((total / OSS_THRESHOLD) * 100),
+      remaining: round2(Math.max(0, OSS_THRESHOLD - total)),
+    }
+  }
+  return { limit: OSS_THRESHOLD, current: forYear(year), previous: forYear(year - 1) }
+}
+
+// ───────────────────────────── Връщане на сума ─────────────────────────────
+
+async function n18Refund(admin: any, body: any): Promise<Response> {
+  const number = String(body.docNumber ?? '').replace(/\D/g, '')
+  const amount = Number(body.amount)
+  const date = String(body.date ?? '')
+  const method = Number(body.method)
+  if (!number) return json({ error: 'Изберете документ' }, 400)
+  if (!(amount > 0) || Math.abs(Math.round(amount * 100) - amount * 100) > 1e-6) return json({ error: 'Невалидна сума' }, 400)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > sofiaDay(new Date())) return json({ error: 'Невалидна дата' }, 400)
+  if (![1, 2, 3, 4].includes(method)) return json({ error: 'Невалиден начин на връщане' }, 400)
+
+  const { data: doc, error } = await admin.database.from('n18_documents')
+    .select('order_number, total_gross, issued_at').eq('doc_number', Number(number)).maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!doc) return json({ error: `Няма документ № ${number.padStart(10, '0')}` }, 404)
+  if (date < sofiaDay(doc.issued_at)) return json({ error: 'Датата е преди продажбата' }, 400)
+
+  const prev = await admin.database.from('n18_refunds').select('amount').eq('order_number', doc.order_number)
+  if (prev.error) throw new Error(prev.error.message)
+  const already = (prev.data ?? []).reduce((s: number, r: any) => s + Number(r.amount), 0)
+  if (cents(already) + cents(amount) > cents(doc.total_gross)) {
+    return json({ error: `Максимум ${(Number(doc.total_gross) - already).toFixed(2)} € може да се върне по този документ` }, 400)
+  }
+
+  const ins = await admin.database.from('n18_refunds').insert([{
+    order_number: doc.order_number, amount, refunded_on: date, refund_method: method,
+  }])
+  if (ins.error) throw new Error(ins.error.message)
+  return json({ ok: true })
 }
 
 // ─────────────────────── Месечен XML (Приложение № 38) ───────────────────────
