@@ -14,12 +14,10 @@
   const SESSION_ID_KEY = 'capnodis_frutales_session_id';
   const SESSION_TTL_MS = 30 * 60 * 1000;
 
-  // TODO before launch: point this at this project's own InsForge
-  // (or equivalent) backend, once one exists. Left null so calls are
-  // safely skipped rather than silently failing against someone else's
-  // endpoint.
-  const TRACK_EVENT_URL = null;
-  const TRACK_VISIT_URL = null;
+  // Same first-party sinks as the almond page; rows are told apart by `page`
+  // (/frutales/...), and the admin panel splits traffic per product on that.
+  const TRACK_EVENT_URL = 'https://je8fwbkk.eu-central.insforge.app/functions/track-event';
+  const TRACK_VISIT_URL = 'https://je8fwbkk.eu-central.insforge.app/functions/track-visit';
 
   function uuid() {
     try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (_) {}

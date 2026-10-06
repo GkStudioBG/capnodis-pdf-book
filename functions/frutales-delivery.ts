@@ -121,6 +121,13 @@ async function ensureToken(db,order,token) {
   }
   return !r.data.revoked_at && new Date(r.data.expires_at).getTime()>Date.now() && equal(r.data.token_hash,digest)
 }
+// Източник на продажбата: последното не-бот посещение на /frutales/ за този visitor_id.
+async function attribution(db,visitorId) {
+  if (!visitorId) return {}
+  const r=await db.database.from('visits').select('utm_source,utm_medium,utm_campaign,utm_content,utm_term').eq('visitor_id',visitorId).eq('is_bot',false).like('page','/frutales%').order('created_at',{ascending:false}).limit(1).maybeSingle()
+  if (r.error || !r.data) return {}
+  return {utm_source:r.data.utm_source,utm_medium:r.data.utm_medium,utm_campaign:r.data.utm_campaign,utm_content:r.data.utm_content,utm_term:r.data.utm_term}
+}
 async function fulfill(session) {
   if (!belongs(session)) return 'ignored'
   const lines = await stripe('checkout/sessions/'+encodeURIComponent(session.id)+'/line_items?limit=2',session._key)
@@ -130,7 +137,9 @@ async function fulfill(session) {
   const db=admin()
   let order=await getOrder(db,session.id)
   if (!order) {
-    const inserted=await db.database.from('frutales_orders').insert([{stripe_session_id:session.id,stripe_payment_link_id:session.payment_link,stripe_price_id:lines.data[0].price.id,stripe_payment_status:session.payment_status,livemode:true,amount_total:session.amount_total,currency:session.currency,customer_email:email,customer_name:session.customer_details?.name||null,visitor_id:typeof session.client_reference_id==='string'?session.client_reference_id.slice(0,200):null}])
+    const visitorId=typeof session.client_reference_id==='string'?session.client_reference_id.slice(0,200):null
+    const utm=await attribution(db,visitorId)
+    const inserted=await db.database.from('frutales_orders').insert([{stripe_session_id:session.id,stripe_payment_link_id:session.payment_link,stripe_price_id:lines.data[0].price.id,stripe_payment_status:session.payment_status,livemode:true,amount_total:session.amount_total,currency:session.currency,customer_email:email,customer_name:session.customer_details?.name||null,visitor_id:visitorId,...utm}])
     if (inserted.error && inserted.error.code!=='23505') throw new Error('Order creation failed')
     order=await getOrder(db,session.id)
   }

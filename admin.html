@@ -3,692 +3,540 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f1a12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Capnodis Admin">
 <title>Capnodis Admin</title>
+<link rel="manifest" href="/admin.webmanifest">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
-:root {
-  --green: #1d3522;
-  --green-mid: #2d5035;
-  --green-light: #3a6644;
-  --gold: #cfb035;
-  --gold-light: #e2c040;
-  --bg: #0f1a12;
-  --bg2: #162019;
-  --bg3: #1e2e21;
-  --card: #1a2b1d;
-  --card2: #223027;
-  --border: rgba(255,255,255,.08);
-  --text: #e8f0e9;
-  --text2: #8fa893;
-  --text3: #5a7260;
-  --red: #e05555;
-  --cyan: #4dd0b0;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --safe-bottom: env(safe-area-inset-bottom, 16px);
+:root{
+  --bg:#0f1a12;--bg2:#142218;--card:#1a2b1d;--card2:#223527;--line:rgba(255,255,255,.08);
+  --text:#e8f0e9;--text2:#9db3a1;--text3:#647a69;
+  --gold:#cfb035;--green:#5fbf7f;--cyan:#4dd0b0;--red:#e46a5e;
+  --alm:#cfb035;--fru:#4dd0b0;
+  --r:16px;--r-sm:10px;
+  --top:env(safe-area-inset-top,0px);--bottom:env(safe-area-inset-bottom,0px);
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%;overscroll-behavior:none}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;font-size:15px;line-height:1.4;overflow:hidden}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;min-height:100dvh}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.num{font-variant-numeric:tabular-nums}
 
-/* ── App Shell ── */
-#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+/* Login */
+#login{min-height:100dvh;display:grid;place-items:center;padding:24px 16px calc(24px + var(--bottom))}
+.login-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 22px}
+.login-card img{height:34px;display:block;margin:0 auto 6px}
+.login-card p.sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:22px}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:12px;color:var(--text2);margin-bottom:6px}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-size:16px;outline:none}
+.field input:focus{border-color:var(--gold)}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text2);margin:4px 0 18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r-sm);padding:12px 16px;font-weight:600;background:var(--card2);transition:filter .15s}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--gold);color:#1d2a10;width:100%}
+.err{color:var(--red);font-size:13px;min-height:18px;margin-top:10px;text-align:center}
 
-/* ── Status bar spacer ── */
-.status-bar{height:env(safe-area-inset-top,0px);background:var(--bg)}
-
-/* ── Top Header ── */
-.top-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px 10px;
-  background:var(--bg);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-  gap:8px;
-}
-.top-bar-logo{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.top-logo-img{height:30px;width:auto;display:block;object-fit:contain}
-.logo-dot{width:7px;height:7px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
-.top-bar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.action-btn{
-  width:36px;height:36px;border:none;background:var(--card);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  color:var(--text2);font-size:16px;transition:background .15s;text-decoration:none;
-  flex-shrink:0;
-}
-.action-btn:active{background:var(--card2)}
-.action-btn.danger:active{background:rgba(224,85,85,.2);color:var(--red)}
-
-/* ── Scrollable content ── */
-#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(72px + var(--safe-bottom))}
-
-/* ── Sections ── */
-.section{display:none}
-.section.active{display:block}
-
-/* ── Stats Hero ── */
-.hero{
-  background:linear-gradient(160deg,var(--green-mid),var(--bg2));
-  padding:20px 20px 24px;
-  border-bottom:1px solid var(--border);
-}
-.hero-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.hero-value{font-size:42px;font-weight:800;color:var(--text);line-height:1}
-.hero-value span{font-size:22px;font-weight:600;color:var(--text2)}
-.hero-sub{font-size:13px;color:var(--text2);margin-top:6px}
-.hero-sub b{color:var(--cyan)}
-
-/* ── Stat cards row ── */
-.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 16px 0}
-.stat-card{
-  background:var(--card);border-radius:var(--radius-sm);padding:14px 12px;
-  border:1px solid var(--border);
-}
-.stat-card-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.stat-card-value{font-size:20px;font-weight:700;color:var(--text)}
-.stat-card-value.gold{color:var(--gold)}
-.stat-card-value.cyan{color:var(--cyan)}
-.stat-card-sub{font-size:11px;color:var(--text3);margin-top:3px}
-
-/* ── Section label ── */
-.section-label{
-  font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;
-  padding:20px 16px 8px;
-}
-
-/* ── Mini chart ── */
-.chart-wrap{padding:0 16px 4px;overflow:hidden}
-.chart{display:flex;align-items:flex-end;gap:4px;height:56px}
-.chart-bar{
-  flex:1;background:var(--card2);border-radius:3px 3px 0 0;
-  min-height:3px;transition:background .2s;position:relative;
-}
-.chart-bar.has-orders{background:var(--green-light)}
-.chart-bar.today{background:var(--gold)}
-.chart-labels{display:flex;gap:4px;padding:0 16px;margin-top:4px}
-.chart-labels span{flex:1;font-size:9px;color:var(--text3);text-align:center}
-
-/* ── Orders list ── */
-.orders-list{padding:0 16px}
-.order-card{
-  background:var(--card);border-radius:var(--radius);
-  border:1px solid var(--border);
-  padding:14px 16px;margin-bottom:10px;
-  cursor:pointer;transition:background .15s;
-  display:flex;flex-direction:column;gap:6px;
-}
-.order-card:active{background:var(--card2)}
-.order-card-top{display:flex;justify-content:space-between;align-items:flex-start}
-.order-email{font-size:14px;font-weight:600;color:var(--text);word-break:break-all}
-.order-amount{font-size:16px;font-weight:700;color:var(--gold);flex-shrink:0;margin-left:10px}
-.order-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.order-time{font-size:12px;color:var(--text3)}
-.order-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
-.badge-paid{background:rgba(77,208,176,.15);color:var(--cyan)}
-.badge-free{background:rgba(207,176,53,.12);color:var(--gold)}
-.order-session{font-size:11px;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── UTM section ── */
-.utm-list{padding:0 16px}
-.utm-row{
-  background:var(--card);border-radius:var(--radius-sm);
-  padding:12px 14px;margin-bottom:8px;
-  border:1px solid var(--border);
-}
-.utm-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.utm-source{font-size:14px;font-weight:600;color:var(--text)}
-.utm-count{font-size:14px;font-weight:700;color:var(--gold)}
-.utm-bar-wrap{background:var(--bg3);border-radius:3px;height:5px;overflow:hidden}
-.utm-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green-light),var(--gold));transition:width .6s ease}
-.utm-pct{font-size:11px;color:var(--text3);margin-top:4px}
-
-/* ── Empty state ── */
-.empty{text-align:center;padding:40px 24px;color:var(--text3)}
-.empty-icon{font-size:40px;margin-bottom:12px}
-
-/* ── Bottom Nav ── */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(15,26,18,.92);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid var(--border);
-  display:flex;
-  padding-bottom:var(--safe-bottom);
-  z-index:100;
-}
-.nav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:10px 4px 6px;cursor:pointer;border:none;background:transparent;
-  color:var(--text3);font-size:10px;gap:4px;transition:color .15s;
-}
-.nav-item.active{color:var(--gold)}
-.nav-item:active{opacity:.6}
-.nav-icon{font-size:22px;line-height:1}
-
-/* ── Login screen ── */
-#login{
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:32px 24px;z-index:200;
-}
-.login-logo-wrap{margin-bottom:24px}
-.login-logo-wrap img{height:52px;width:auto;display:block}
-.login-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
-.login-sub{font-size:14px;color:var(--text2);margin-bottom:36px;text-align:center;line-height:1.5}
-.login-field{
-  width:100%;max-width:360px;
-  background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);
-  color:var(--text);font-size:17px;padding:16px 18px;
-  outline:none;margin-bottom:14px;
-  -webkit-appearance:none;
-}
-.login-field:focus{border-color:var(--gold)}
-.login-btn{
-  width:100%;max-width:360px;
-  background:var(--gold);color:#000;border:none;border-radius:var(--radius);
-  font-size:17px;font-weight:700;padding:16px;cursor:pointer;
-  transition:opacity .15s;
-}
-.login-btn:active{opacity:.85}
-.login-err{font-size:13px;color:var(--red);margin-top:10px;display:none}
-
-/* ── Order detail sheet ── */
-#sheet-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;
-  display:none;opacity:0;transition:opacity .25s;
-  backdrop-filter:blur(4px);
-}
-#sheet-overlay.open{display:block}
-#sheet-overlay.visible{opacity:1}
-#sheet{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--card);border-radius:24px 24px 0 0;
-  padding:0 0 var(--safe-bottom);
-  z-index:301;
-  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
-  max-height:80dvh;overflow-y:auto;
-}
-#sheet.open{transform:translateY(0)}
-.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 20px}
-.sheet-content{padding:0 20px 20px}
-.sheet-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px}
-.sheet-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
-.sheet-row:last-child{border:none}
-.sheet-key{font-size:13px;color:var(--text3)}
-.sheet-val{font-size:13px;color:var(--text);text-align:right;word-break:break-all;max-width:65%}
-
-/* ── Loading ── */
-.loader{display:flex;align-items:center;justify-content:center;padding:60px 0}
-.spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+/* Shell */
+header.top{position:sticky;top:0;z-index:10;background:rgba(15,26,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:calc(10px + var(--top)) 16px 10px}
+.top-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.top-inner img{height:26px}
+.live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-left:auto}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+.dot.off{background:var(--red);animation:none}
+@keyframes pulse{50%{opacity:.35}}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;color:var(--text2)}
+.icon-btn svg{width:18px;height:18px}
+.spin svg{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── Visitors section ── */
-.visits-hero{
-  margin:16px 16px 0;background:var(--card);border-radius:var(--radius);
-  border:1px solid var(--border);padding:16px;
-  display:flex;justify-content:space-between;align-items:center;
+main{max-width:1200px;margin:0 auto;padding:16px 16px calc(90px + var(--bottom))}
+.view{display:grid;gap:14px}
+h2{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin:6px 2px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.muted{color:var(--text2)}
+.small{font-size:12px}
+
+/* Period switch */
+.seg{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 6px;font-size:13px;color:var(--text2)}
+.seg button.on{background:var(--card2);color:var(--text);font-weight:600}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.kpi .label{font-size:12px;color:var(--text2)}
+.kpi .value{font-size:24px;font-weight:700;margin-top:4px}
+.kpi .hint{font-size:12px;color:var(--text3);margin-top:2px}
+.split{height:6px;border-radius:3px;background:var(--bg2);overflow:hidden;display:flex;margin-top:10px}
+.split i{display:block;height:100%}
+
+/* Products */
+.products{display:grid;gap:14px}
+.prod-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--bg2)}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.b-alm{color:var(--alm)}.b-fru{color:var(--fru)}
+.ptable{width:100%;border-collapse:collapse;font-size:14px}
+.ptable th{font-weight:500;color:var(--text3);font-size:12px;text-align:right;padding:4px 0}
+.ptable th:first-child,.ptable td:first-child{text-align:left}
+.ptable td{padding:7px 0;border-top:1px solid var(--line);text-align:right}
+.prod-foot{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--text2)}
+
+/* Chart */
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.chart-head .seg{width:auto}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--text2)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+#chart{width:100%;height:180px;display:block}
+#chart text{fill:var(--text3);font-size:10px}
+
+/* Lists */
+.list{display:grid}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .main{flex:1;min-width:0}
+.row .main b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .main span{font-size:12px;color:var(--text3)}
+.row .amt{font-weight:600;text-align:right;white-space:nowrap}
+.empty{color:var(--text3);font-size:13px;padding:8px 0}
+
+/* N-18 */
+.n18-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.n18-grid div{background:var(--bg2);border-radius:var(--r-sm);padding:10px 12px}
+.n18-grid small{display:block;font-size:11px;color:var(--text3)}
+.n18-grid b{font-size:17px}
+.xml-row{display:flex;gap:10px}
+.xml-row select{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;font-size:15px}
+.xml-row .btn{background:var(--gold);color:#1d2a10;white-space:nowrap}
+.note{font-size:12px;color:var(--text3);margin-top:10px}
+a.doclink{color:var(--gold);text-decoration:none;font-size:12px}
+
+/* Funnel / sources */
+.funnel{display:grid;gap:8px}
+.fbar{display:grid;grid-template-columns:110px 1fr 70px;align-items:center;gap:10px;font-size:13px}
+.fbar .track{height:10px;background:var(--bg2);border-radius:5px;overflow:hidden}
+.fbar .track i{display:block;height:100%;background:var(--gold);border-radius:5px}
+
+/* Bottom nav (mobile) */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:rgba(20,34,24,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + var(--bottom))}
+nav.tabs button{flex:1;border:0;background:transparent;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;padding:6px 0;border-radius:10px}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button.on{color:var(--gold)}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + var(--bottom));transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+
+/* Desktop: all sections visible in a grid, no bottom nav */
+@media (min-width:900px){
+  main{padding:24px 24px 40px;display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+  .view{display:grid!important}
+  #v-overview{grid-column:1/-1}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .products{grid-template-columns:1fr 1fr}
+  nav.tabs{display:none}
+  .toast{bottom:24px}
 }
-.visits-big{font-size:36px;font-weight:800;color:var(--cyan)}
-.visits-label{font-size:12px;color:var(--text3);margin-top:2px}
-.conv-wrap{text-align:right}
-.conv-big{font-size:28px;font-weight:700;color:var(--gold)}
-.conv-label{font-size:12px;color:var(--text3);margin-top:2px}
-
-/* ── Funnel widget ── */
-.funnel{padding:0 16px}
-.funnel-step{margin-bottom:10px}
-.funnel-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
-.funnel-name{font-size:13px;color:var(--text);font-weight:600}
-.funnel-count{font-size:13px;color:var(--text2);font-weight:700}
-.funnel-track{background:var(--bg3);border-radius:4px;height:22px;overflow:hidden}
-.funnel-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green-light),var(--gold));min-width:2px;transition:width .6s ease}
-.funnel-drop{font-size:11px;color:var(--text3);text-align:right;margin-top:3px}
-
-/* ── Source / creative rows (extended) ── */
-.utm-stats{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
-.utm-stat{font-size:11px;color:var(--text3)}
-.utm-stat b{color:var(--cyan);font-weight:700}
-.utm-stat.rev b{color:var(--gold)}
 </style>
 </head>
 <body>
 
-<!-- Вход -->
-<div id="login">
-  <div class="login-logo-wrap">
-    <picture>
-      <source srcset="assets/loogo.webp" type="image/webp">
-      <img src="assets/loogo.png" alt="Capnodis">
-    </picture>
-  </div>
-  <div class="login-title">Административен панел</div>
-  <div class="login-sub">Въведи паролата за достъп</div>
-  <input type="password" class="login-field" id="pwd-input" placeholder="Парола" autocomplete="current-password">
-  <button class="login-btn" id="login-btn">Влез</button>
-  <div class="login-err" id="login-err">Грешна парола</div>
-</div>
+<section id="login">
+  <form class="login-card" id="login-form" autocomplete="on">
+    <img src="/assets/logo-white.png" alt="Capnodis">
+    <p class="sub">Админ панел</p>
+    <label class="field"><span>Потребител</span><input id="f-user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+    <label class="field"><span>Парола</span><input id="f-pass" name="password" type="password" autocomplete="current-password" required></label>
+    <label class="check"><input type="checkbox" id="f-remember" checked> Запомни ме на това устройство</label>
+    <button class="btn btn-primary" id="f-submit" type="submit">Вход</button>
+    <p class="err" id="f-err"></p>
+  </form>
+</section>
 
-<!-- Главно приложение -->
-<div id="app" style="display:none">
-  <div class="status-bar"></div>
-
-  <div class="top-bar">
-    <div class="top-bar-logo">
-      <picture>
-        <source srcset="assets/loogo.webp" type="image/webp">
-        <img src="assets/loogo.png" alt="Capnodis" class="top-logo-img">
-      </picture>
-      <div class="logo-dot"></div>
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="top-inner">
+      <img src="/assets/logo-white.png" alt="Capnodis">
+      <div class="live"><span class="dot" id="live-dot"></span><span id="updated">—</span></div>
+      <button class="icon-btn" id="btn-refresh" title="Обнови" aria-label="Обнови">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-logout" title="Изход" aria-label="Изход">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/></svg>
+      </button>
     </div>
-    <div class="top-bar-actions">
-      <a href="https://capnodis.com" class="action-btn" title="Към сайта" target="_blank">🏠</a>
-      <button class="action-btn" id="refresh-btn" title="Опресни">↻</button>
-      <button class="action-btn danger" id="logout-btn" title="Изход">🚪</button>
-    </div>
-  </div>
+  </header>
 
-  <div id="content">
+  <main>
     <!-- Табло -->
-    <div class="section active" id="sec-dashboard">
-      <div id="dashboard-content"><div class="loader"><div class="spin"></div></div></div>
+    <div class="view" id="v-overview" data-tab="overview">
+      <div class="seg" id="period">
+        <button data-p="today">Днес</button>
+        <button data-p="week" class="on">7 дни</button>
+        <button data-p="month">30 дни</button>
+        <button data-p="all">Общо</button>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">Приходи</div><div class="value num" id="k-rev">—</div><div class="split" id="k-split"></div></div>
+        <div class="kpi"><div class="label">Платени поръчки</div><div class="value num" id="k-paid">—</div><div class="hint" id="k-all"></div></div>
+        <div class="kpi"><div class="label">Almendro</div><div class="value num" id="k-alm">—</div><div class="hint" id="k-alm-h"></div></div>
+        <div class="kpi"><div class="label">Frutales</div><div class="value num" id="k-fru">—</div><div class="hint" id="k-fru-h"></div></div>
+      </div>
+      <div class="card">
+        <div class="chart-head">
+          <h3 style="margin:0">Последните 30 дни</h3>
+          <div class="legend"><span style="--c:var(--alm)">Almendro</span><span style="--c:var(--fru)">Frutales</span></div>
+          <div class="seg" id="chart-mode"><button data-m="orders" class="on">Поръчки</button><button data-m="revenue">Приходи</button></div>
+        </div>
+        <svg id="chart" role="img" aria-label="Продажби по дни"></svg>
+      </div>
     </div>
 
-    <!-- Поръчки -->
-    <div class="section" id="sec-orders">
-      <div id="orders-content"><div class="loader"><div class="spin"></div></div></div>
+    <!-- Продукти -->
+    <div class="view" id="v-products" data-tab="products">
+      <h2>Продукти</h2>
+      <div class="products" id="products"></div>
+      <h2>Последни поръчки</h2>
+      <div class="card"><div class="list" id="recent"></div></div>
+    </div>
+
+    <!-- Н-18 -->
+    <div class="view" id="v-n18" data-tab="n18">
+      <h2>Наредба Н-18 · НАП</h2>
+      <div class="card">
+        <h3>Месечен одиторски файл (XML)</h3>
+        <div class="n18-grid">
+          <div><small>№ на магазина</small><b id="n-shop">—</b></div>
+          <div><small>Последен документ</small><b class="num" id="n-last">—</b></div>
+          <div><small id="n-month-label">Документи този месец</small><b class="num" id="n-docs">—</b></div>
+          <div><small>Оборот / ДДС този месец</small><b class="num" id="n-sum">—</b></div>
+        </div>
+        <div class="xml-row">
+          <select id="n-month" aria-label="Месец"></select>
+          <button class="btn" id="btn-xml">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
+            Свали XML
+          </button>
+        </div>
+        <p class="note">Файлът за месеца се подава в НАП до 15-о число на следващия месец. Генерира се от издадените документи по чл. 52о.</p>
+      </div>
+      <div class="card">
+        <h3>Последни документи</h3>
+        <div class="list" id="docs"></div>
+      </div>
     </div>
 
     <!-- Трафик -->
-    <div class="section" id="sec-traffic">
-      <div id="traffic-content"><div class="loader"><div class="spin"></div></div></div>
+    <div class="view" id="v-traffic" data-tab="traffic">
+      <h2>Трафик · 30 дни</h2>
+      <div class="seg" id="traffic-product"><button data-tp="almendro" class="on">Almendro</button><button data-tp="frutales">Frutales</button></div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">Уникални посетители</div><div class="value num" id="t-uv">—</div></div>
+        <div class="kpi"><div class="label">Конверсия</div><div class="value num" id="t-conv">—</div><div class="hint" id="t-pv"></div></div>
+      </div>
+      <div class="card"><h3>Фуния</h3><div class="funnel" id="funnel"></div></div>
+      <div class="card"><h3>Източници</h3><div class="list" id="sources"></div></div>
     </div>
-  </div>
+  </main>
 
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-tab="dashboard">
-      <span class="nav-icon">📊</span>Табло
-    </button>
-    <button class="nav-item" data-tab="orders">
-      <span class="nav-icon">📦</span>Поръчки
-    </button>
-    <button class="nav-item" data-tab="traffic">
-      <span class="nav-icon">📡</span>Трафик
-    </button>
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/></svg>Табло</button>
+    <button data-tab="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Продукти</button>
+    <button data-tab="n18"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M9 13h6M9 17h6"/></svg>НАП</button>
+    <button data-tab="traffic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg>Трафик</button>
   </nav>
 </div>
 
-<!-- Детайли на поръчка -->
-<div id="sheet-overlay">
-  <div id="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-content" id="sheet-content"></div>
-  </div>
-</div>
-
 <script>
-const API = 'https://je8fwbkk.eu-central.insforge.app/functions/admin-api'
-const SESSION_KEY = 'capnodis_admin_pwd'
+(function () {
+  const API = 'https://je8fwbkk.eu-central.insforge.app/functions/admin-api'
+  const DOC_URL = 'https://je8fwbkk.eu-central.insforge.app/functions/n18-document?t='
+  const KEY = 'capnodis_admin_auth'
+  const PRODUCTS = { almendro: { label: 'Almendro', cls: 'b-alm', color: 'var(--alm)' }, frutales: { label: 'Frutales', cls: 'b-fru', color: 'var(--fru)' } }
+  const MONTHS = ['януари','февруари','март','април','май','юни','юли','август','септември','октомври','ноември','декември']
 
-let cachedData = null
-let currentTab = 'dashboard'
+  let data = null, period = 'week', chartMode = 'orders', trafficProduct = 'almendro', timer = null
 
-// ── Вход ──────────────────────────────────────────────────────────
-const loginScreen = document.getElementById('login')
-const appEl = document.getElementById('app')
-const pwdInput = document.getElementById('pwd-input')
-const loginBtn = document.getElementById('login-btn')
-const loginErr = document.getElementById('login-err')
-
-function getSavedPwd() { return sessionStorage.getItem(SESSION_KEY) || '' }
-function savePwd(p) { sessionStorage.setItem(SESSION_KEY, p) }
-
-async function tryLogin(pwd) {
-  loginBtn.textContent = '...'
-  loginBtn.disabled = true
-  loginErr.style.display = 'none'
-  try {
-    const res = await fetch(API + '?section=dashboard', {
-      headers: { 'x-admin-password': pwd }
-    })
-    if (res.ok) {
-      savePwd(pwd)
-      loginScreen.style.display = 'none'
-      appEl.style.display = 'flex'
-      cachedData = await res.json()
-      renderAll()
-    } else {
-      loginErr.style.display = 'block'
-    }
-  } catch (_) {
-    loginErr.style.display = 'block'
-    loginErr.textContent = 'Грешка при свързване'
+  const $ = (id) => document.getElementById(id)
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const eur = (n) => new Intl.NumberFormat('bg-BG', { style: 'currency', currency: 'EUR' }).format(n || 0)
+  const monthName = (ym) => { const [y, m] = ym.split('-'); return `${MONTHS[+m - 1]} ${y}` }
+  const ago = (iso) => {
+    if (!iso) return '—'
+    const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+    if (min < 1) return 'току-що'
+    if (min < 60) return `преди ${min} мин`
+    const h = Math.round(min / 60)
+    if (h < 24) return `преди ${h} ч`
+    return new Date(iso).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short', timeZone: 'Europe/Sofia' })
   }
-  loginBtn.textContent = 'Влез'
-  loginBtn.disabled = false
-}
+  const time = (iso) => new Date(iso).toLocaleString('bg-BG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
 
-loginBtn.addEventListener('click', () => tryLogin(pwdInput.value.trim()))
-pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwdInput.value.trim()) })
+  // ── Auth storage (per device convenience only) ──
+  function loadAuth() {
+    try { return JSON.parse(sessionStorage.getItem(KEY) || localStorage.getItem(KEY) || 'null') } catch { return null }
+  }
+  function saveAuth(auth, remember) {
+    try {
+      sessionStorage.setItem(KEY, JSON.stringify(auth))
+      if (remember) localStorage.setItem(KEY, JSON.stringify(auth)); else localStorage.removeItem(KEY)
+    } catch {}
+  }
+  function clearAuth() { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY) } catch {} }
+  const headers = (auth) => ({ 'x-admin-user': auth.user, 'x-admin-password': auth.pass })
 
-const saved = getSavedPwd()
-if (saved) tryLogin(saved)
+  function toast(msg) {
+    const t = document.createElement('div')
+    t.className = 'toast'; t.textContent = msg
+    document.body.appendChild(t)
+    setTimeout(() => t.remove(), 3500)
+  }
 
-// ── Изход ─────────────────────────────────────────────────────────
-document.getElementById('logout-btn').addEventListener('click', () => {
-  sessionStorage.removeItem(SESSION_KEY)
-  appEl.style.display = 'none'
-  loginScreen.style.display = 'flex'
-  pwdInput.value = ''
-  loginErr.style.display = 'none'
-  cachedData = null
-})
+  // ── Data ──
+  async function fetchDashboard(auth) {
+    const res = await fetch(API + '?section=dashboard', { headers: headers(auth), cache: 'no-store' })
+    if (res.status === 401) throw Object.assign(new Error('unauthorized'), { code: 401 })
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    return res.json()
+  }
 
-// ── Опресняване ───────────────────────────────────────────────────
-document.getElementById('refresh-btn').addEventListener('click', async () => {
-  const btn = document.getElementById('refresh-btn')
-  btn.style.transform = 'rotate(360deg)'
-  btn.style.transition = 'transform .5s'
-  setTimeout(() => { btn.style.transform = ''; btn.style.transition = '' }, 500)
-  await loadData()
-})
+  async function refresh(manual) {
+    const auth = loadAuth()
+    if (!auth) return showLogin()
+    const btn = $('btn-refresh')
+    btn.classList.add('spin')
+    try {
+      data = await fetchDashboard(auth)
+      render()
+      $('live-dot').classList.remove('off')
+      $('updated').textContent = 'обновено ' + new Date().toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
+    } catch (e) {
+      if (e.code === 401) { clearAuth(); return showLogin('Сесията изтече. Влез отново.') }
+      $('live-dot').classList.add('off')
+      $('updated').textContent = 'няма връзка'
+      if (manual) toast('Неуспешно обновяване')
+    } finally {
+      btn.classList.remove('spin')
+    }
+  }
 
-async function loadData() {
-  try {
-    const res = await fetch(API + '?section=dashboard', {
-      headers: { 'x-admin-password': getSavedPwd() }
+  // ── Render ──
+  function render() {
+    if (!data) return
+    renderOverview(); renderChart(); renderProducts(); renderRecent(); renderN18(); renderTraffic()
+  }
+
+  function renderOverview() {
+    const t = data.totals[period], a = data.products.almendro[period], f = data.products.frutales[period]
+    $('k-rev').textContent = eur(t.revenue)
+    $('k-paid').textContent = t.paid
+    $('k-all').textContent = t.orders !== t.paid ? `${t.orders} общо, вкл. ${t.orders - t.paid} с промокод` : 'всички платени'
+    $('k-alm').textContent = eur(a.revenue)
+    $('k-alm-h').textContent = `${a.paid} платени поръчки`
+    $('k-fru').textContent = eur(f.revenue)
+    $('k-fru-h').textContent = `${f.paid} платени поръчки`
+    const total = a.revenue + f.revenue
+    $('k-split').innerHTML = total
+      ? `<i style="width:${(a.revenue / total) * 100}%;background:var(--alm)"></i><i style="width:${(f.revenue / total) * 100}%;background:var(--fru)"></i>`
+      : ''
+  }
+
+  function renderChart() {
+    const svg = $('chart')
+    const W = svg.clientWidth || 600, H = 180, padB = 18, padT = 8
+    const rows = data.daily
+    const val = (r, p) => chartMode === 'orders' ? r[p] : r[p + 'Revenue']
+    const max = Math.max(1, ...rows.map((r) => val(r, 'almendro') + val(r, 'frutales')))
+    const bw = W / rows.length, gap = Math.max(2, bw * 0.25)
+    const scale = (v) => (v / max) * (H - padB - padT)
+    let out = ''
+    rows.forEach((r, i) => {
+      const x = i * bw + gap / 2, w = bw - gap
+      const ha = scale(val(r, 'almendro')), hf = scale(val(r, 'frutales'))
+      const base = H - padB
+      const label = `${r.day}: Almendro ${val(r, 'almendro')}, Frutales ${val(r, 'frutales')}`
+      out += `<g><title>${esc(label)}</title>`
+      if (ha) out += `<rect x="${x}" y="${base - ha}" width="${w}" height="${ha}" rx="2" fill="var(--alm)"/>`
+      if (hf) out += `<rect x="${x}" y="${base - ha - hf}" width="${w}" height="${hf}" rx="2" fill="var(--fru)"/>`
+      if (!ha && !hf) out += `<rect x="${x}" y="${base - 1}" width="${w}" height="1" fill="var(--line)"/>`
+      out += '</g>'
+      if ((i % 7 === 0 && rows.length - 1 - i >= 4) || i === rows.length - 1) {
+        const d = r.day.slice(8) + '.' + r.day.slice(5, 7)
+        out += `<text x="${x + w / 2}" y="${H - 4}" text-anchor="middle">${d}</text>`
+      }
     })
-    if (res.ok) {
-      cachedData = await res.json()
-      renderAll()
-    }
-  } catch (_) {}
-}
+    const maxLabel = chartMode === 'orders' ? max : eur(max)
+    out += `<text x="2" y="${padT + 8}">${esc(maxLabel)}</text>`
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+    svg.innerHTML = out
+  }
 
-// ── Навигация ─────────────────────────────────────────────────────
-document.querySelectorAll('.nav-item').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentTab = btn.dataset.tab
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'))
-    document.getElementById('sec-' + currentTab).classList.add('active')
-    if (cachedData) renderAll()
-  })
-})
-
-// ── Рендиране ─────────────────────────────────────────────────────
-function renderAll() {
-  if (!cachedData) return
-  renderDashboard()
-  renderOrders()
-  renderTraffic()
-}
-
-// ── Фуния ─────────────────────────────────────────────────────────
-function funnelHtml(funnel) {
-  const f = funnel || { view: 0, initiate: 0, purchase: 0 }
-  const max = Math.max(f.view, 1)
-  const steps = [
-    { name: '👁️ Видяна страница', count: f.view },
-    { name: '🛒 Натиснат „Купи"', count: f.initiate },
-    { name: '✅ Покупка', count: f.purchase },
-  ]
-  return steps.map((st, i) => {
-    const w = st.count > 0 ? Math.max(Math.round((st.count / max) * 100), 4) : 0
-    let drop = ''
-    if (i > 0) {
-      const prev = steps[i - 1].count
-      const rate = prev > 0 ? Math.round((st.count / prev) * 100) : 0
-      drop = `<div class="funnel-drop">${rate}% от предходната стъпка</div>`
-    }
-    return `
-      <div class="funnel-step">
-        <div class="funnel-row"><span class="funnel-name">${st.name}</span><span class="funnel-count">${st.count}</span></div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:${w}%"></div></div>
-        ${drop}
+  function renderProducts() {
+    $('products').innerHTML = Object.entries(PRODUCTS).map(([key, meta]) => {
+      const p = data.products[key]
+      const rows = [['Днес', p.today], ['7 дни', p.week], ['30 дни', p.month], ['Общо', p.all]]
+        .map(([l, s]) => `<tr><td>${l}</td><td class="num">${s.paid}</td><td class="num">${s.orders - s.paid}</td><td class="num">${eur(s.revenue)}</td></tr>`).join('')
+      return `<div class="card">
+        <div class="prod-head"><span class="badge ${meta.cls}">${meta.label}</span><span class="muted small">${esc(p.name)}</span></div>
+        <table class="ptable"><thead><tr><th>Период</th><th>Платени</th><th>Промокод</th><th>Приходи</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="prod-foot"><span>Средна поръчка: <b class="num">${eur(p.avgOrder)}</b></span><span>Последна продажба: <b>${ago(p.lastSaleAt)}</b></span></div>
       </div>`
-  }).join('')
-}
-
-// ── Табло ─────────────────────────────────────────────────────────
-function renderDashboard() {
-  const d = cachedData
-  const s = d.stats
-  const orders = d.recent || []
-  const dailyEntries = Object.entries(d.daily || {})
-  const maxBar = Math.max(...dailyEntries.map(([,v]) => v), 1)
-  const today = new Date().toISOString().slice(0, 10)
-
-  const bars = dailyEntries.map(([day, count]) => {
-    const h = Math.round((count / maxBar) * 100)
-    const isToday = day === today
-    const cls = isToday ? 'today' : (count > 0 ? 'has-orders' : '')
-    return `<div class="chart-bar ${cls}" style="height:${Math.max(h,4)}%" title="${day}: ${count}"></div>`
-  }).join('')
-
-  const labels = dailyEntries.map(([day], i) => {
-    const dt = new Date(day)
-    const label = (i % 3 === 0) ? `${dt.getDate()}/${dt.getMonth()+1}` : ''
-    return `<span>${label}</span>`
-  }).join('')
-
-  document.getElementById('dashboard-content').innerHTML = `
-    <div class="hero">
-      <div class="hero-label">Общи приходи</div>
-      <div class="hero-value"><span>€</span>${s.totalRevenue.toFixed(2)}</div>
-      <div class="hero-sub"><b>${s.totalOrders}</b> поръчки · <b>${s.uniqueVisitors ?? 0}</b> униك. посет. · Конв. <b>${s.convRate}%</b></div>
-    </div>
-
-    <div class="stat-row">
-      <div class="stat-card">
-        <div class="stat-card-label">Днес</div>
-        <div class="stat-card-value gold">€${s.today.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.today.orders} поръч.</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Седмица</div>
-        <div class="stat-card-value gold">€${s.week.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.week.orders} поръч.</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Месец</div>
-        <div class="stat-card-value cyan">€${s.month.revenue.toFixed(0)}</div>
-        <div class="stat-card-sub">${s.month.orders} поръч.</div>
-      </div>
-    </div>
-
-    <div class="section-label">Поръчки — последни 14 дни</div>
-    <div class="chart-wrap">
-      <div class="chart">${bars}</div>
-    </div>
-    <div class="chart-labels">${labels}</div>
-
-    <div class="section-label">Фуния на конверсия (30 дни)</div>
-    <div class="funnel">${funnelHtml(d.funnel)}</div>
-
-    <div class="section-label">Последни поръчки</div>
-    <div class="orders-list">
-      ${orders.slice(0, 5).map(o => orderCard(o)).join('') || emptyState('📦', 'Няма поръчки')}
-    </div>
-  `
-  bindOrderCards()
-}
-
-// ── Поръчки ───────────────────────────────────────────────────────
-function renderOrders() {
-  const orders = cachedData?.recent || []
-  document.getElementById('orders-content').innerHTML = `
-    <div class="section-label">Всички поръчки (${orders.length})</div>
-    <div class="orders-list">
-      ${orders.map(o => orderCard(o)).join('') || emptyState('📦', 'Няма поръчки')}
-    </div>
-  `
-  bindOrderCards()
-}
-
-function orderCard(o) {
-  const ago = timeAgo(o.created_at)
-  const isReal = o.amount >= 1
-  const badge = isReal
-    ? `<span class="order-badge badge-paid">€${Number(o.amount).toFixed(2)}</span>`
-    : `<span class="order-badge badge-free">Безплатно</span>`
-  return `
-    <div class="order-card" data-id="${o.id}" data-order='${JSON.stringify(o).replace(/'/g,"&#39;")}'>
-      <div class="order-card-top">
-        <div class="order-email">${o.customer_email || '—'}</div>
-        <div class="order-amount">${isReal ? '€' + Number(o.amount).toFixed(2) : '€0'}</div>
-      </div>
-      <div class="order-meta">
-        ${badge}
-        <span class="order-time">${ago}</span>
-        ${o.billing_country ? `<span class="order-badge" style="background:rgba(255,255,255,.07);color:var(--text2)">${o.billing_country}</span>` : ''}
-      </div>
-      <div class="order-session">${o.stripe_session_id || ''}</div>
-    </div>`
-}
-
-function bindOrderCards() {
-  document.querySelectorAll('.order-card').forEach(card => {
-    card.addEventListener('click', () => {
-      try { openSheet(JSON.parse(card.dataset.order.replace(/&#39;/g,"'"))) } catch(_) {}
-    })
-  })
-}
-
-// ── Трафик ────────────────────────────────────────────────────────
-function renderTraffic() {
-  const s = cachedData?.stats || {}
-  const sources = cachedData?.sources || []
-  const creatives = cachedData?.creatives || []
-
-  document.getElementById('traffic-content').innerHTML = `
-    <div class="visits-hero">
-      <div>
-        <div class="visits-big">${s.uniqueVisitors || 0}</div>
-        <div class="visits-label">Уникални посетители (30 дни)</div>
-      </div>
-      <div class="conv-wrap">
-        <div class="conv-big">${s.convRate || 0}%</div>
-        <div class="conv-label">Конверсия</div>
-      </div>
-    </div>
-
-    <div class="section-label">Трафик източници · конверсия</div>
-    <div class="utm-list">
-      ${sources.length ? sources.map(src => `
-        <div class="utm-row">
-          <div class="utm-top">
-            <div class="utm-source">${sourceLabel(src.source)}</div>
-            <div class="utm-count">${src.visitors ?? src.count}</div>
-          </div>
-          <div class="utm-bar-wrap">
-            <div class="utm-bar" style="width:${src.pct}%"></div>
-          </div>
-          <div class="utm-stats">
-            <span class="utm-stat"><b>${src.orders ?? 0}</b> поръчки</span>
-            <span class="utm-stat"><b>${src.conv ?? 0}%</b> конв.</span>
-            <span class="utm-stat rev"><b>€${Number(src.revenue ?? 0).toFixed(2)}</b></span>
-          </div>
-        </div>`).join('')
-      : emptyState('📡', 'Все още няма данни за трафика', 'Посещенията ще се появят тук')}
-    </div>
-
-    <div class="section-label">Топ креативи (utm_content)</div>
-    <div class="utm-list">
-      ${creatives.length ? creatives.map(c => `
-        <div class="utm-row">
-          <div class="utm-top">
-            <div class="utm-source">${c.content === 'unattributed' ? '— без атрибуция' : '🎬 ' + c.content}</div>
-            <div class="utm-count">€${Number(c.revenue ?? 0).toFixed(2)}</div>
-          </div>
-          <div class="utm-stats">
-            <span class="utm-stat"><b>${c.orders ?? 0}</b> поръчки</span>
-          </div>
-        </div>`).join('')
-      : emptyState('🎬', 'Все още няма продажби по креатив', 'Появяват се след първите поръчки с utm_content')}
-    </div>
-  `
-}
-
-function sourceLabel(src) {
-  const map = {
-    facebook: '📘 Facebook',
-    instagram: '📸 Instagram',
-    google: '🔍 Google',
-    direct: '🔗 Директен',
-    organic: '🌱 Органичен',
-    email: '📧 Имейл',
-    twitter: '🐦 Twitter / X',
-    tiktok: '🎵 TikTok',
+    }).join('')
   }
-  return map[src?.toLowerCase()] || `🌐 ${src}`
-}
 
-// ── Детайли на поръчка ───────────────────────────────────────────
-function openSheet(order) {
-  const rows = [
-    ['Имейл', order.customer_email || '—'],
-    ['Име', order.customer_name || '—'],
-    ['Телефон', order.customer_phone || '—'],
-    ['Държава', order.billing_country || '—'],
-    ['Сума', order.amount >= 1 ? `€${Number(order.amount).toFixed(2)}` : 'Безплатно (купон)'],
-    ['Статус', order.stripe_payment_status || '—'],
-    ['Дата', order.created_at ? new Date(order.created_at).toLocaleString('bg-BG') : '—'],
-    ['Stripe сесия', order.stripe_session_id || '—'],
-    ['ID', order.id || '—'],
-  ]
-  document.getElementById('sheet-content').innerHTML = `
-    <div class="sheet-title">Детайли на поръчката</div>
-    ${rows.map(([k, v]) => `<div class="sheet-row"><span class="sheet-key">${k}</span><span class="sheet-val">${v}</span></div>`).join('')}
-  `
-  const overlay = document.getElementById('sheet-overlay')
-  const sheet = document.getElementById('sheet')
-  overlay.style.display = 'block'
-  requestAnimationFrame(() => {
-    overlay.classList.add('visible')
-    sheet.classList.add('open')
+  function renderRecent() {
+    const list = data.recent
+    $('recent').innerHTML = list.length ? list.slice(0, 25).map((o) => {
+      const meta = PRODUCTS[o.product]
+      const who = o.name || o.email || 'клиент'
+      const sub = [time(o.createdAt), o.country, o.source && o.source !== 'direct' ? o.source : ''].filter(Boolean).join(' · ')
+      return `<div class="row"><span class="badge ${meta.cls}">${meta.label}</span>
+        <div class="main"><b>${esc(who)}</b><span>${esc(sub)}</span></div>
+        <div class="amt num">${o.amount > 0 ? eur(o.amount) : '<span class="muted small">промокод</span>'}</div></div>`
+    }).join('') : '<p class="empty">Още няма поръчки.</p>'
+  }
+
+  function renderN18() {
+    const n = data.n18
+    $('n-shop').textContent = n.shopNumber || '—'
+    $('n-last').textContent = n.lastDocument || 'няма'
+    $('n-month-label').textContent = 'Документи · ' + monthName(n.currentMonth.month)
+    $('n-docs').textContent = n.currentMonth.documents
+    $('n-sum').textContent = `${eur(n.currentMonth.gross)} / ${eur(n.currentMonth.vat)}`
+    const sel = $('n-month'), prev = sel.value
+    sel.innerHTML = n.months.map((m) => `<option value="${m}">${monthName(m)}</option>`).join('')
+    if (prev && n.months.includes(prev)) sel.value = prev
+    $('docs').innerHTML = n.recent.length ? n.recent.map((d) => {
+      const meta = PRODUCTS[d.product]
+      return `<div class="row"><span class="badge ${meta.cls}">${meta.label}</span>
+        <div class="main"><b class="num">№ ${esc(d.number)}</b><span>${time(d.issuedAt)}</span></div>
+        <div class="amt"><span class="num">${eur(d.total)}</span><br><a class="doclink" href="${DOC_URL + encodeURIComponent(d.token)}" target="_blank" rel="noopener">виж документа</a></div></div>`
+    }).join('') : '<p class="empty">Още няма издадени документи. Първият ще бъде № 0000000001.</p>'
+  }
+
+  function renderTraffic() {
+    const t = data.traffic[trafficProduct]
+    $('t-uv').textContent = t.uniqueVisitors
+    $('t-conv').textContent = t.convRate + '%'
+    $('t-pv').textContent = `${t.pageviews} прегледа`
+    const f = t.funnel, top = Math.max(1, f.view)
+    $('funnel').innerHTML = [['Посетители', f.view], ['Към плащане', f.initiate], ['Покупка', f.purchase]]
+      .map(([l, v]) => `<div class="fbar"><span>${l}</span><div class="track"><i style="width:${(v / top) * 100}%"></i></div><span class="num" style="text-align:right">${v}</span></div>`).join('')
+    $('sources').innerHTML = t.sources.length ? t.sources.map((s) =>
+      `<div class="row"><div class="main"><b>${esc(s.source)}</b><span>${s.visitors} посетители · ${s.conv}% конверсия</span></div>
+       <div class="amt num">${s.orders} · ${eur(s.revenue)}</div></div>`).join('') : '<p class="empty">Няма данни.</p>'
+  }
+
+  // ── XML download ──
+  async function downloadXml() {
+    const auth = loadAuth(), month = $('n-month').value
+    if (!auth || !month) return
+    const btn = $('btn-xml')
+    btn.disabled = true
+    try {
+      const res = await fetch(API + '?section=n18_xml&month=' + encodeURIComponent(month), { headers: headers(auth), cache: 'no-store' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        return toast(body.error || 'Неуспешно генериране на XML')
+      }
+      const cd = res.headers.get('Content-Disposition') || ''
+      const name = (cd.match(/filename="([^"]+)"/) || [])[1] || `N18_${month}.xml`
+      const blob = await res.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob); a.download = name
+      document.body.appendChild(a); a.click(); a.remove()
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+      toast('XML файлът е изтеглен')
+    } catch {
+      toast('Няма връзка със сървъра')
+    } finally {
+      btn.disabled = false
+    }
+  }
+
+  // ── Navigation ──
+  function showTab(tab) {
+    document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab))
+    if (window.matchMedia('(min-width:900px)').matches) return
+    document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.dataset.tab !== tab))
+    try { sessionStorage.setItem('capnodis_admin_tab', tab) } catch {}
+    window.scrollTo(0, 0)
+    if (tab === 'overview' && data) renderChart()
+  }
+
+  function showLogin(msg) {
+    clearInterval(timer)
+    $('app').classList.add('hidden')
+    $('login').classList.remove('hidden')
+    $('f-err').textContent = msg || ''
+  }
+
+  function showApp() {
+    $('login').classList.add('hidden')
+    $('app').classList.remove('hidden')
+    let tab = 'overview'
+    try { tab = sessionStorage.getItem('capnodis_admin_tab') || 'overview' } catch {}
+    showTab(tab)
+    refresh()
+    clearInterval(timer)
+    timer = setInterval(() => { if (!document.hidden) refresh() }, 60000)
+  }
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const auth = { user: $('f-user').value.trim(), pass: $('f-pass').value }
+    const btn = $('f-submit')
+    btn.disabled = true; $('f-err').textContent = ''
+    try {
+      data = await fetchDashboard(auth)
+      saveAuth(auth, $('f-remember').checked)
+      $('f-pass').value = ''
+      showApp()
+    } catch (err) {
+      $('f-err').textContent = err.code === 401 ? 'Грешен потребител или парола' : 'Няма връзка със сървъра'
+    } finally {
+      btn.disabled = false
+    }
   })
-}
 
-document.getElementById('sheet-overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeSheet()
-})
-function closeSheet() {
-  const overlay = document.getElementById('sheet-overlay')
-  const sheet = document.getElementById('sheet')
-  overlay.classList.remove('visible')
-  sheet.classList.remove('open')
-  setTimeout(() => { overlay.style.display = 'none' }, 280)
-}
+  $('btn-refresh').addEventListener('click', () => refresh(true))
+  $('btn-logout').addEventListener('click', () => { clearAuth(); data = null; showLogin() })
+  $('btn-xml').addEventListener('click', downloadXml)
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab) })
+  $('period').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return
+    period = b.dataset.p
+    document.querySelectorAll('#period button').forEach((x) => x.classList.toggle('on', x === b))
+    renderOverview()
+  })
+  $('chart-mode').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return
+    chartMode = b.dataset.m
+    document.querySelectorAll('#chart-mode button').forEach((x) => x.classList.toggle('on', x === b))
+    renderChart()
+  })
+  $('traffic-product').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return
+    trafficProduct = b.dataset.tp
+    document.querySelectorAll('#traffic-product button').forEach((x) => x.classList.toggle('on', x === b))
+    if (data) renderTraffic()
+  })
+  window.addEventListener('resize', () => { if (data) renderChart() })
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && data) refresh() })
 
-// ── Помощни функции ──────────────────────────────────────────────
-function timeAgo(iso) {
-  if (!iso) return '—'
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  const h = Math.floor(m / 60)
-  const d = Math.floor(h / 24)
-  if (d > 0) return `преди ${d}д`
-  if (h > 0) return `преди ${h}ч`
-  if (m > 0) return `преди ${m}мин`
-  return 'сега'
-}
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => {})
 
-function emptyState(icon, title, sub = '') {
-  return `<div class="empty"><div class="empty-icon">${icon}</div><div>${title}</div>${sub ? `<div style="font-size:13px;margin-top:8px">${sub}</div>` : ''}</div>`
-}
-
-// ── Pull-to-refresh ───────────────────────────────────────────────
-let startY = 0
-const content = document.getElementById('content')
-content.addEventListener('touchstart', e => { startY = e.touches[0].clientY }, { passive: true })
-content.addEventListener('touchend', e => {
-  const dy = e.changedTouches[0].clientY - startY
-  if (dy > 80 && content.scrollTop === 0) loadData()
-}, { passive: true })
+  if (loadAuth()) showApp(); else showLogin()
+})()
 </script>
 </body>
 </html>

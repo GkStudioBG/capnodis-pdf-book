@@ -16,3 +16,18 @@
 
 /gracias.html
   X-Robots-Tag: noindex,follow
+
+/admin
+  X-Robots-Tag: noindex,nofollow
+  Cache-Control: no-cache
+
+/admin.html
+  X-Robots-Tag: noindex,nofollow
+  Cache-Control: no-cache
+
+/admin.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: no-cache
+
+/admin-sw.js
+  Cache-Control: no-cache

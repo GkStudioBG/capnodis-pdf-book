@@ -24,6 +24,7 @@ function isBot(userAgent: string | null): boolean {
 const ALLOWED_EVENTS = new Set([
   'checkout_click', 'InitiateCheckout',
   'hero_buy_click', 'hero_content_click', 'sticky_buy', 'final_cta',
+  'band_buy_click', 'story_cta', 'outcomes_buy_click', // /frutales/
   'faq_open',
   'scroll_50', 'scroll_75', 'scroll_90',
 ])
